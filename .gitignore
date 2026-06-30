@@ -37,4 +37,6 @@ next-env.d.ts
 # scratch / local media
 *.mov
 /.tm_frames/
-.claude/settings.local.json
+
+# claude code local config
+.claude/
