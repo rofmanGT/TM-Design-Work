@@ -17,9 +17,13 @@ import {
   HiOutlineChevronRight,
   HiOutlineFingerPrint,
   HiOutlineFaceSmile,
-  HiOutlineShieldCheck,
   HiOutlineBeaker,
   HiOutlineCodeBracket,
+  HiOutlineChartBarSquare,
+  HiOutlineFilm,
+  HiOutlineMicrophone,
+  HiOutlineMusicalNote,
+  HiOutlineChatBubbleBottomCenterText,
 } from "react-icons/hi2";
 import {
   EnsembleGauge,
@@ -31,14 +35,20 @@ import {
   type DetectorResult,
   type CategoryRow,
 } from "@/components/ensemble";
+import { REAL_DETECTORS, REAL_CATEGORIES } from "@/components/real/realData";
 
 // ─────────────────────────────────────────────────────────────────────
-// Commercial sample — 6 detectors across 4 categories, mixed verdicts so
-// the ensemble lands at "some evidence" (the state the user asked for).
+// REAL detector roster for a video-with-audio case. Names, descriptions,
+// and category taxonomy come verbatim from the production repo via
+// realData.ts (model-processors/*.ts). Confidence scores remain
+// illustrative — real scores are per-analysis and live in their DB.
+// Weights are intentionally omitted: the real ensemble aggregates by
+// votes (include=1, trust=2), not fractional weights.
 // ─────────────────────────────────────────────────────────────────────
 
 type CategorizedDetector = DetectorResult & {
   icon: React.ReactNode;
+  description?: string;
 };
 
 type Category = {
@@ -49,76 +59,88 @@ type Category = {
   detectors: CategorizedDetector[];
 };
 
+const rd = (key: string) => {
+  const d = REAL_DETECTORS.find((d) => d.key === key);
+  if (!d) throw new Error(`Unknown real detector: ${key}`);
+  return d;
+};
+
 const commercialAnalysis = {
   fileName: "Senator_K_press_clip.mp4",
   caseId: "tm-2026-06-23-0118",
   source: { platform: "X (Twitter)", url: "x.com/example/status/…" },
   categories: [
     {
-      id: "genai",
-      name: "Generative AI",
-      subtitle: "Signatures of GenAI tools",
-      icon: <HiOutlineSparkles className="w-7 h-7" />,
-      detectors: [
-        {
-          name: "General-Purpose Image Detector",
-          icon: <HiOutlinePhoto className="w-5 h-5" />,
-          confidence: 86,
-          weight: 0.25,
-        },
-        {
-          name: "Diffusion Fingerprint",
-          icon: <HiOutlineFingerPrint className="w-5 h-5" />,
-          confidence: 79,
-          weight: 0.2,
-        },
-      ],
-    },
-    {
-      id: "visual-noise",
-      name: "Visual Noise",
-      subtitle: "Variations in pixels and color",
-      icon: <HiOutlinePhoto className="w-7 h-7" />,
-      detectors: [
-        {
-          name: "Frequency-Domain Image Detector",
-          icon: <HiOutlinePhoto className="w-5 h-5" />,
-          confidence: 80,
-          weight: 0.15,
-        },
-        {
-          name: "Compression Artifact",
-          icon: <HiOutlinePhoto className="w-5 h-5" />,
-          confidence: 41,
-          weight: 0.1,
-        },
-      ],
-    },
-    {
       id: "face",
-      name: "Face Consistency",
-      subtitle: "Face-swap and inpainting traces",
+      name: REAL_CATEGORIES.face.label,
+      subtitle: REAL_CATEGORIES.face.descrip,
       icon: <HiOutlineFaceSmile className="w-7 h-7" />,
       detectors: [
         {
-          name: "Boundary Inconsistency",
+          name: rd("genconvit").name,
+          description: rd("genconvit").descrip,
           icon: <HiOutlineFaceSmile className="w-5 h-5" />,
+          confidence: 72,
+        },
+        {
+          name: rd("sensity-face").name,
+          description: rd("sensity-face").descrip,
+          icon: <HiOutlineFingerPrint className="w-5 h-5" />,
           confidence: 64,
-          weight: 0.15,
         },
       ],
     },
     {
-      id: "provenance",
-      name: "Provenance",
-      subtitle: "Chain-of-custody checks",
-      icon: <HiOutlineShieldCheck className="w-7 h-7" />,
+      id: "imagen",
+      name: REAL_CATEGORIES.imagen.label,
+      subtitle: REAL_CATEGORIES.imagen.descrip,
+      icon: <HiOutlineSparkles className="w-7 h-7" />,
       detectors: [
         {
-          name: "Content Credentials (C2PA)",
-          icon: <HiOutlineShieldCheck className="w-5 h-5" />,
-          confidence: 35,
-          weight: 0.15,
+          name: rd("hive-video").name,
+          description: rd("hive-video").descrip,
+          icon: <HiOutlineFilm className="w-5 h-5" />,
+          confidence: 81,
+        },
+      ],
+    },
+    {
+      id: "audio",
+      name: REAL_CATEGORIES.audio.label,
+      subtitle: REAL_CATEGORIES.audio.descrip,
+      icon: <HiOutlineMicrophone className="w-7 h-7" />,
+      detectors: [
+        {
+          name: rd("wav2vec2").name,
+          description: rd("wav2vec2").descrip,
+          icon: <HiOutlineMicrophone className="w-5 h-5" />,
+          confidence: 86,
+        },
+        {
+          name: rd("dftotal").name,
+          description: rd("dftotal").descrip,
+          icon: <HiOutlineMusicalNote className="w-5 h-5" />,
+          confidence: 79,
+        },
+        {
+          name: rd("loccus").name,
+          description: rd("loccus").descrip,
+          icon: <HiOutlineMusicalNote className="w-5 h-5" />,
+          confidence: 74,
+        },
+      ],
+    },
+    {
+      id: "semantic",
+      name: REAL_CATEGORIES.semantic.label,
+      subtitle: REAL_CATEGORIES.semantic.descrip,
+      icon: <HiOutlineChatBubbleBottomCenterText className="w-7 h-7" />,
+      detectors: [
+        {
+          name: rd("openai-transcript").name,
+          description: rd("openai-transcript").descrip,
+          icon: <HiOutlineChatBubbleBottomCenterText className="w-5 h-5" />,
+          confidence: 41,
         },
       ],
     },
@@ -129,6 +151,11 @@ const commercialAnalysis = {
     processingTime: "4m 8s",
     analyzedOn: "Tue, Jun 23, 2026",
     ensembleVersion: "v2.3.1",
+    // Performance-context label (Georgetown label-design exploration, Idea 4):
+    // published benchmark + calibration metrics for this ensemble version.
+    benchmark: "Deepfake-Eval-2024",
+    benchmarkAuc: "0.81",
+    benchmarkFpr: "0.12",
   },
 };
 
@@ -142,31 +169,23 @@ const allDetectors: DetectorResult[] = commercialAnalysis.categories.flatMap((c)
 );
 
 // ─────────────────────────────────────────────────────────────────────
-// Simulation timing — split into two phases:
-//   1. Download phase ("Waiting for media download…") — scales with media
-//      type. Video uploads take meaningfully longer than images.
-//   2. Analysis phase — relative detector offsets, same regardless of type.
-// Total time = downloadMs + max(analysis offsets).
+// Simulation timing — the upload/fetch already finished on
+// /media/uploading before we arrive here, so this page only runs the
+// detector phase: each entry is the elapsed ms at which that detector's
+// result lands. Keys must match the roster names above.
 // ─────────────────────────────────────────────────────────────────────
 
-const DOWNLOAD_MS_BY_TYPE: Record<string, number> = {
-  image: 1500,
-  audio: 3500,
-  video: 9000,
-  url: 3000, // URL submissions — backend has to fetch from the platform first
+const FRESH_TIMING: Record<string, number> = {
+  [rd("openai-transcript").name]: 700,
+  [rd("wav2vec2").name]: 1600,
+  [rd("dftotal").name]: 2400,
+  [rd("loccus").name]: 3100,
+  [rd("hive-video").name]: 3900,
+  [rd("sensity-face").name]: 4500,
+  [rd("genconvit").name]: 5000,
 };
 
-// Each detector's completion offset measured from the END of the download phase.
-const DETECTOR_OFFSETS_MS: Record<string, number> = {
-  "Content Credentials (C2PA)": 700,
-  "Compression Artifact": 2000,
-  "Frequency-Domain Image Detector": 2900,
-  "General-Purpose Image Detector": 3700,
-  "Diffusion Fingerprint": 4400,
-  "Boundary Inconsistency": 5000,
-};
-
-const ANALYSIS_TOTAL_MS = Math.max(...Object.values(DETECTOR_OFFSETS_MS));
+const FRESH_TOTAL_MS = Math.max(...Object.values(FRESH_TIMING));
 
 // ─────────────────────────────────────────────────────────────────────
 // Component
@@ -178,14 +197,7 @@ export function CommercialAnalysisPage() {
 
   // Pick download duration by media type. URL submissions default to "url".
   // Uploads pass type=image|video|audio from the Query page.
-  const mediaType = search.get("type") ?? (search.get("url") ? "url" : "image");
-  const downloadMs = DOWNLOAD_MS_BY_TYPE[mediaType] ?? DOWNLOAD_MS_BY_TYPE.url;
-  const detectorCompleteTimes: Record<string, number> = Object.fromEntries(
-    Object.entries(DETECTOR_OFFSETS_MS).map(([name, off]) => [name, downloadMs + off])
-  );
-  const totalMs = downloadMs + ANALYSIS_TOTAL_MS;
-
-  const [elapsed, setElapsed] = useState(fresh ? 0 : totalMs + 1);
+  const [elapsed, setElapsed] = useState(fresh ? 0 : FRESH_TOTAL_MS + 1);
   const startedAt = useRef(Date.now());
 
   useEffect(() => {
@@ -194,26 +206,26 @@ export function CommercialAnalysisPage() {
     function tick() {
       const e = Date.now() - startedAt.current;
       setElapsed(e);
-      if (e < totalMs + 1500) {
+      if (e < FRESH_TOTAL_MS + 1500) {
         raf = requestAnimationFrame(tick);
       }
     }
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [fresh, totalMs]);
+  }, [fresh]);
 
   // Live detector list — when fresh, override verdict to "pending" until each completes.
   const liveCategories = useMemo(() => {
-    if (!fresh || elapsed >= totalMs) return commercialAnalysis.categories;
+    if (!fresh || elapsed >= FRESH_TOTAL_MS) return commercialAnalysis.categories;
     return commercialAnalysis.categories.map((cat) => ({
       ...cat,
       detectors: cat.detectors.map((d) => {
-        const completeAt = detectorCompleteTimes[d.name] ?? totalMs;
+        const completeAt = FRESH_TIMING[d.name] ?? FRESH_TOTAL_MS;
         const done = elapsed >= completeAt;
         return done ? d : { ...d, verdict: "pending" as Verdict };
       }),
     }));
-  }, [fresh, elapsed, totalMs, detectorCompleteTimes]);
+  }, [fresh, elapsed]);
 
   const liveDetectors: DetectorResult[] = liveCategories.flatMap((c) =>
     c.detectors.map((d) => ({
@@ -234,14 +246,10 @@ export function CommercialAnalysisPage() {
 
   const { confidence, verdict, agreeingCount, activeCount } = ensembleConfidence(liveDetectors);
 
-  // Loading phase mirrors TrueMedia's two-stage banner copy.
-  const loadingPhase: "download" | "analyses" | null = !fresh
-    ? null
-    : elapsed < downloadMs
-      ? "download"
-      : activeCount < liveDetectors.length
-        ? "analyses"
-        : null;
+  // Upload/fetch already happened on /media/uploading — only the analyses
+  // phase remains here.
+  const loadingPhase: "download" | "analyses" | null =
+    !fresh ? null : activeCount < liveDetectors.length ? "analyses" : null;
 
   const peakConfidence = liveDetectors
     .filter((d) => d.verdict !== "pending")
@@ -274,7 +282,7 @@ export function CommercialAnalysisPage() {
 
       <section className="bg-[#041E42] dark:bg-slate-900 text-white p-5 rounded-lg ring-1 ring-transparent dark:ring-slate-800">
               <div className="flex items-end justify-between mb-5 gap-3 flex-wrap">
-                <h1 className="text-3xl font-bold leading-none">Is this Real?</h1>
+                <h1 className="text-3xl font-bold tracking-tight leading-none">Is this Real?</h1>
                 <span className="text-[11px] uppercase tracking-wider text-slate-400 font-mono">
                   {commercialAnalysis.details.ensembleVersion} · calibrated Mar 2026
                 </span>
@@ -384,9 +392,9 @@ export function CommercialAnalysisPage() {
                 <DetectorCard
                   key={d.name}
                   name={d.name}
+                  description={d.description}
                   confidence={d.confidence}
                   verdict={d.verdict}
-                  weight={d.weight}
                   icon={d.icon}
                 />
               ))}
@@ -421,6 +429,12 @@ export function CommercialAnalysisPage() {
             icon={<HiOutlineInformationCircle />}
             label="Ensemble version"
             value={commercialAnalysis.details.ensembleVersion}
+            mono
+          />
+          <DetailRow
+            icon={<HiOutlineChartBarSquare />}
+            label={`Benchmark · ${commercialAnalysis.details.benchmark}`}
+            value={`AUC ${commercialAnalysis.details.benchmarkAuc} · FPR ${commercialAnalysis.details.benchmarkFpr}`}
             mono
           />
           <button

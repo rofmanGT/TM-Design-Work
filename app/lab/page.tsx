@@ -57,7 +57,9 @@ export default function LabPage() {
       <main className="bg-white dark:bg-slate-950 text-[#041E42] dark:text-slate-100 min-h-screen p-6 md:p-8 space-y-14">
           <header className="border-b border-slate-200 dark:border-slate-800 pb-6 flex items-start justify-between gap-6">
             <div>
-              <h1 className="text-3xl font-bold">Ensemble &amp; detector lab</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-balance">
+                Ensemble &amp; detector lab
+              </h1>
               <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 max-w-2xl">
                 Drop-in React components for the TrueMedia analysis page. Files live in{" "}
                 <code className="text-[13px] bg-slate-100 dark:bg-slate-800 dark:text-slate-200 rounded px-1.5 py-0.5">

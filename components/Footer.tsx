@@ -64,11 +64,14 @@ export function Footer() {
         <div className="grid grid-cols-2 lg:grid-cols-12 gap-8">
           {/* Brand + attribution */}
           <div className="col-span-2 lg:col-span-4">
-            <img
-              src="/logos/truemedialogo.png"
-              alt="TrueMedia"
-              className="h-9 w-auto mb-3 rounded"
-            />
+            <span className="inline-flex items-center bg-[#041E42] rounded-md px-3 py-2 mb-3">
+              {/* Official brand mark (white + lime on transparent) on its native navy */}
+              <img
+                src="/logos/trueMediaLogoTextDefault.svg"
+                alt="TrueMedia"
+                className="h-6 w-auto"
+              />
+            </span>
             <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400 max-w-xs">
               An open-source research project of{" "}
               <span className="font-medium text-[#041E42] dark:text-slate-200">
@@ -137,14 +140,8 @@ export function Footer() {
             © 2026 TrueMedia · Georgetown University. Released for research and
             public-interest use.
           </div>
-          <div className="flex items-center gap-3 font-mono">
-            <span>
-              {BUILD_VERSION} · build {BUILD_HASH}
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              All systems operational
-            </span>
+          <div className="font-mono tabular-nums">
+            {BUILD_VERSION} · build {BUILD_HASH}
           </div>
         </div>
       </div>

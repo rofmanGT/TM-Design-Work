@@ -30,6 +30,13 @@ export type VerdictStyle = {
   Icon: ComponentType<{ className?: string }>;
 };
 
+// Pill colors are the EXACT badge hex values from the production repo
+// (apps/detect/app/data/model.ts `ranks`): high #771D1D/#F8B4B5,
+// uncertain #623112/#FBCA16, low #014737/#84E1BD, unknown #374051.
+// NOTE: the real taxonomy has three evidence tiers (low/uncertain/high) —
+// its "uncertain" renders with adjective "some" in verdict sentences. Our
+// four-tier split (uncertain vs some-evidence) is a design exploration on
+// top of that; "some-evidence" borrows the real uncertain badge colors.
 export const VERDICT_STYLES: Record<Verdict, VerdictStyle> = {
   "substantial-evidence": {
     label: "Substantial Evidence",
@@ -41,23 +48,23 @@ export const VERDICT_STYLES: Record<Verdict, VerdictStyle> = {
   },
   "some-evidence": {
     label: "Some Evidence",
-    pillBg: "bg-[#78350F]",
-    pillText: "text-[#FCD34D]",
+    pillBg: "bg-[#623112]",
+    pillText: "text-[#FBCA16]",
     bar: "bg-[#F59E0B]",
     frame: "bg-[#F59E0B]",
     Icon: HiOutlineExclamationCircle,
   },
   "little-evidence": {
     label: "Little Evidence",
-    pillBg: "bg-[#14532D]",
-    pillText: "text-[#86EFAC]",
+    pillBg: "bg-[#014737]",
+    pillText: "text-[#84E1BD]",
     bar: "bg-[#84CC16]",
     frame: "bg-[#84CC16]",
     Icon: HiOutlineCheckCircle,
   },
   uncertain: {
     label: "Uncertain",
-    pillBg: "bg-slate-700",
+    pillBg: "bg-[#374051]",
     pillText: "text-slate-300",
     bar: "bg-slate-500",
     frame: "bg-slate-600",

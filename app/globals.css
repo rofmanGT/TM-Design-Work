@@ -2,6 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Global refinement layer ────────────────────────────────────────
+   Site-wide typographic discipline: smoothed rendering, tabular figures
+   (counts, percentages, and case IDs align in every table), branded
+   text selection, and a consistent keyboard-focus ring. */
+@layer base {
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    background: rgba(0, 181, 226, 0.28);
+  }
+  .dark ::selection {
+    background: rgba(0, 181, 226, 0.38);
+  }
+
+  :focus-visible {
+    outline: 2px solid #00b5e2;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
 /* Gellix is the brand font — drop a .woff2 in /public/fonts/ and this will pick it up.
    Until then, falls back to system-ui via the Tailwind font stack. */
 @font-face {

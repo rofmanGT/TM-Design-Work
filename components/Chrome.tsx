@@ -126,10 +126,11 @@ function Header({ onToggleSidebar }: { onToggleSidebar: () => void }) {
 
       <div className="flex justify-center">
         <a href="/" className="flex items-center">
+          {/* Official brand mark from the production repo (white + lime on transparent) */}
           <img
-            src="/logos/truemedialogo.png"
+            src="/logos/trueMediaLogoTextDefault.svg"
             alt="TrueMedia"
-            className="h-10 w-auto"
+            className="h-9 w-auto"
           />
         </a>
       </div>

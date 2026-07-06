@@ -143,7 +143,7 @@ function VerdictHero() {
   return (
     <section className="relative bg-[#041E42] dark:bg-slate-900 text-white p-5 rounded-lg overflow-hidden ring-1 ring-transparent dark:ring-slate-800">
       <div className="flex items-end justify-between mb-5 gap-3 flex-wrap">
-        <h1 className="text-3xl font-bold leading-none">Is this Real?</h1>
+        <h1 className="text-3xl font-bold tracking-tight leading-none">Is this Real?</h1>
         <span className="text-[11px] uppercase tracking-wider text-slate-400 font-mono">
           {analysisData.details.ensembleVersion} · calibrated Mar 2026
         </span>

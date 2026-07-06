@@ -23,11 +23,8 @@ import {
   FaXTwitter,
 } from "react-icons/fa6";
 import { VerdictBadge } from "@/components/ensemble";
-import {
-  historyItems,
-  notableCases,
-  claimHistory,
-} from "@/components/commercial/sampleData";
+import { historyItems, claimHistory } from "@/components/commercial/sampleData";
+import { REAL_CASES, type RealCase } from "@/components/real/realData";
 import { CLAIM_PILL } from "@/components/shared/claimStyles";
 
 type MainTab = "ai" | "false";
@@ -99,7 +96,7 @@ export function VerifyMediaPage() {
       <main className="flex-1 min-w-0 p-5 md:p-8">
         {/* Header */}
         <header className="mb-6">
-          <h1 className="text-3xl font-bold">Verify Media</h1>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Verify Media</h1>
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
             Analyze social media for synthetic and manipulated content
           </p>
@@ -307,8 +304,8 @@ export function VerifyMediaPage() {
                 </button>
               </div>
               <div className="flex flex-col gap-5">
-                {notableCases.slice(0, 5).map((c) => (
-                  <NotableCard key={c.id} c={c} />
+                {REAL_CASES.slice(0, 5).map((c, i) => (
+                  <NotableCard key={c.id} c={c} index={i} />
                 ))}
               </div>
               <a
@@ -490,66 +487,81 @@ function HistoryClaimsPreview() {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Notable case card — matches TrueMedia's layout: title + picture icon row,
-// image with "AI manipulated" pill overlay, blurb, "Appeared in" + More.
+// Notable case card — real cases from the production repo's quiz
+// (realData.ts). Pill reflects the case's documented ground truth using
+// the real rank badge colors; never claims manipulation we can't back.
 // ─────────────────────────────────────────────────────────────────────
 
-const APPEARED_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
-  X: FaXTwitter,
-  Reddit: FaRedditAlien,
-  Instagram: FaInstagram,
-  Facebook: FaFacebookF,
-  "Truth Social": TruthIcon,
-  TikTok: FaInstagram, // close enough fallback in our icon set
+// Distinct-ish gradient per card so the placeholder images look varied.
+const CASE_GRADIENTS = [
+  "from-amber-700 via-amber-600 to-rose-700",
+  "from-slate-700 via-slate-600 to-orange-800",
+  "from-zinc-700 via-stone-600 to-zinc-800",
+  "from-indigo-700 via-violet-700 to-purple-800",
+  "from-orange-700 via-red-700 to-rose-900",
+  "from-cyan-800 via-blue-800 to-indigo-900",
+];
+
+const TRUTH_PILL: Record<RealCase["groundTruth"], { label: (t: string) => string; classes: string }> = {
+  fake: { label: (t) => `AI manipulated ${t}`, classes: "bg-[#771D1D] text-[#F8B4B5]" },
+  authentic: { label: (t) => `Authentic ${t}`, classes: "bg-[#014737] text-[#84E1BD]" },
+  unlabeled: { label: () => "Unlabeled", classes: "bg-[#374051] text-white" },
 };
 
-// Distinct-ish gradient per case so the placeholder images look varied.
-const CASE_GRADIENT: Record<string, string> = {
-  "n-001": "from-amber-700 via-amber-600 to-rose-700",
-  "n-002": "from-slate-700 via-slate-600 to-orange-800",
-  "n-003": "from-zinc-700 via-stone-600 to-zinc-800",
-  "n-004": "from-indigo-700 via-violet-700 to-purple-800",
-  "n-005": "from-orange-700 via-red-700 to-rose-900",
-  "n-006": "from-cyan-800 via-blue-800 to-indigo-900",
-};
+function hostnameOf(url?: string) {
+  if (!url) return null;
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return null;
+  }
+}
 
-function NotableCard({ c }: { c: (typeof notableCases)[number] }) {
-  const TypeIcon = MEDIA_ICON[c.type];
-  const AppearedIcon = APPEARED_ICON[c.appearedIn] ?? FaXTwitter;
-  const gradient = CASE_GRADIENT[c.id] ?? "from-slate-700 to-slate-800";
+function NotableCard({ c, index }: { c: RealCase; index: number }) {
+  const TypeIcon = MEDIA_ICON[c.mediaType];
+  const gradient = CASE_GRADIENTS[index % CASE_GRADIENTS.length];
+  const truth = TRUTH_PILL[c.groundTruth];
+  const sourceHost = hostnameOf(c.citationUrl);
 
   return (
     <article className="w-full rounded-2xl border border-slate-300 dark:border-slate-700 bg-[#E2E2E2] dark:bg-slate-800 p-4 shadow-sm hover:shadow-md transition">
       {/* Title + picture icon */}
       <div className="flex items-start gap-2 min-h-[56px]">
         <h3 className="flex-1 text-base font-semibold leading-tight text-[#041E42] dark:text-slate-100">
-          {c.name}
+          {c.title}
         </h3>
         <TypeIcon className="w-5 h-5 text-slate-500 dark:text-slate-400 shrink-0" />
       </div>
 
-      {/* Image with AI manipulated pill */}
+      {/* Image with ground-truth pill */}
       <div className="relative mt-3 h-32 rounded-xl overflow-hidden">
         <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
         <div className="absolute inset-0 flex items-center justify-center text-white/30">
           <TypeIcon className="w-12 h-12" />
         </div>
-        <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-red-600 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full shadow">
-          <span className="flex h-3 w-3 items-center justify-center rounded-full border border-white text-[9px] leading-none">
-            ×
-          </span>
-          AI manipulated {c.type}
+        <div
+          className={`absolute bottom-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full shadow ${truth.classes}`}
+        >
+          {truth.label(c.mediaType)}
         </div>
       </div>
 
-      {/* Footer: appeared-in + More */}
-      <div className="mt-4 flex items-center justify-between">
-        <div className="text-sm text-[#041E42] dark:text-slate-300 inline-flex items-center gap-1.5">
-          Appeared in <AppearedIcon className="w-3.5 h-3.5" />
+      {/* Footer: documentation source + More */}
+      <div className="mt-4 flex items-center justify-between gap-2">
+        <div className="text-xs text-[#041E42] dark:text-slate-300 truncate min-w-0">
+          {sourceHost ? (
+            <>
+              Documented by <span className="font-mono">{sourceHost}</span>
+            </>
+          ) : (
+            "TrueMedia curated case"
+          )}
         </div>
         <a
-          href="/media/analysis"
-          className="inline-flex items-center gap-1 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-transparent text-sm text-[#041E42] dark:text-slate-200 px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+          href={c.citationUrl ?? "/media/notable"}
+          target={c.citationUrl ? "_blank" : undefined}
+          rel={c.citationUrl ? "noopener noreferrer" : undefined}
+          className="inline-flex items-center gap-1 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-transparent text-sm text-[#041E42] dark:text-slate-200 px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition shrink-0"
         >
           More <HiOutlineArrowRight className="w-4 h-4" />
         </a>
@@ -558,11 +570,12 @@ function NotableCard({ c }: { c: (typeof notableCases)[number] }) {
   );
 }
 
+// Mobile fallback grid (right rail is hidden below xl).
 function NotableCasesGrid() {
   return (
     <>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-2xl font-bold">Notable Cases</h2>
+        <h2 className="text-2xl font-bold tracking-tight">Notable Cases</h2>
         <a
           href="/media/notable"
           className="text-sm hover:text-[#00B5E2] inline-flex items-center gap-1"
@@ -571,8 +584,8 @@ function NotableCasesGrid() {
         </a>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {notableCases.slice(0, 6).map((c) => (
-          <NotableCard key={c.id} c={c} />
+        {REAL_CASES.slice(0, 6).map((c, i) => (
+          <NotableCard key={c.id} c={c} index={i} />
         ))}
       </div>
     </>

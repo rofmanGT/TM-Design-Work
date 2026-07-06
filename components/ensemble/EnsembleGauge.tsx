@@ -158,6 +158,84 @@ function GaugeSvg({ value }: { value: number }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────
+// Verbal confidence ladder — adapted from the Georgetown label-design
+// exploration (labels.myassin.georgetown.domains, Ideas 2 & 5): a
+// calibrated verbal scale for the score, plus an honest uncertainty band
+// showing the actual min–max spread of the individual detector scores.
+// Band boundaries align with the verdict tiers in verdict.ts so the two
+// verbal scales can never contradict each other.
+// ─────────────────────────────────────────────────────────────────────
+
+const LADDER_BANDS = [
+  { from: 0, to: 25, label: "Unlikely" },
+  { from: 25, to: 50, label: "Possible" },
+  { from: 50, to: 75, label: "Likely" },
+  { from: 75, to: 90, label: "Very likely" },
+  { from: 90, to: 100, label: "Virtually certain" },
+];
+
+function ConfidenceLadder({
+  value,
+  detectors,
+  accent,
+}: {
+  value: number;
+  detectors: DetectorResult[];
+  accent: string;
+}) {
+  const active = detectors.filter((d) => d.verdict !== "pending");
+  if (active.length === 0) return null;
+
+  const lo = Math.min(...active.map((d) => d.confidence));
+  const hi = Math.max(...active.map((d) => d.confidence));
+  const band =
+    LADDER_BANDS.find((b) => value < b.to) ?? LADDER_BANDS[LADDER_BANDS.length - 1];
+
+  return (
+    <div className="mt-4">
+      <div className="flex items-baseline justify-between mb-1.5">
+        <span className="text-[10px] uppercase tracking-wider text-slate-400">
+          Verbal confidence
+        </span>
+        <span className={`text-xs font-semibold ${accent}`}>{band.label}</span>
+      </div>
+
+      <div className="relative h-2 rounded-full overflow-hidden bg-slate-800">
+        {/* Band segments — subtle steps, boundaries aligned to verdict tiers */}
+        {LADDER_BANDS.map((b, i) => (
+          <div
+            key={b.label}
+            title={`${b.label} · ${b.from}–${b.to}`}
+            className={b === band ? "absolute inset-y-0 bg-slate-500/60" : "absolute inset-y-0 bg-slate-700/40"}
+            style={{
+              left: `${b.from}%`,
+              width: `calc(${b.to - b.from}% - 1px)`,
+              marginLeft: i === 0 ? 0 : 1,
+            }}
+          />
+        ))}
+        {/* Detector spread — real min–max of individual detector scores */}
+        <div
+          title={`Detector range ${lo}–${hi}`}
+          className="absolute inset-y-0 bg-white/20"
+          style={{ left: `${lo}%`, width: `${Math.max(hi - lo, 1)}%` }}
+        />
+        {/* Ensemble marker */}
+        <div
+          className="absolute inset-y-0 w-0.5 bg-white"
+          style={{ left: `calc(${value}% - 1px)` }}
+        />
+      </div>
+
+      <div className="flex justify-between mt-1 text-[9px] font-mono text-slate-500">
+        <span>Detector range {lo}–{hi}</span>
+        <span>Ensemble {value}</span>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────
 // Main
 // ─────────────────────────────────────────────────────────────────────
 
@@ -184,11 +262,15 @@ export function EnsembleGauge({
       />
 
       <div className="relative">
-        {/* Verdict sentence — or loading banner — centered, with completion count in corner */}
-        <div className="relative text-center mb-3 px-12">
-          <span className="absolute right-0 top-0 text-[10px] text-slate-400 font-mono">
+        {/* Completion count — its own row so it can never collide with the sentence */}
+        <div className="flex justify-end mb-1">
+          <span className="text-[10px] text-slate-400 font-mono tabular-nums">
             {activeCount}/{totalCount} complete
           </span>
+        </div>
+
+        {/* Verdict sentence — or loading banner — centered */}
+        <div className="text-center mb-3 px-2">
           {isLoading ? (
             <div className="text-sm leading-tight flex items-center justify-center gap-2 text-slate-200">
               <span
@@ -225,6 +307,11 @@ export function EnsembleGauge({
           </div>
         </div>
 
+        {/* Calibrated verbal scale + detector-spread band (hidden while loading) */}
+        {!isLoading && (
+          <ConfidenceLadder value={confidence} detectors={detectors} accent={s.pillText} />
+        )}
+
         {/* Votes bar with inline agreement count */}
         <div className="mt-4 flex items-center gap-2">
           <span className="text-[10px] uppercase tracking-wider text-slate-400 shrink-0">
@@ -247,24 +334,25 @@ export function EnsembleGauge({
           </span>
         </div>
 
-        {/* Category-level summary table */}
+        {/* Category-level summary table — fixed column template shared by the
+            header and every row, so counts and pills align down the page. */}
         {categoryRows && categoryRows.length > 0 && (
           <div className="mt-4 border border-slate-700 rounded-md overflow-hidden">
-            <div className="grid grid-cols-[1fr_auto_auto] gap-3 px-3 py-1.5 bg-slate-800/60 text-[10px] uppercase tracking-wider text-slate-400">
+            <div className="grid grid-cols-[1fr_3.5rem_8.75rem] gap-2 px-3 py-1.5 bg-slate-800/60 text-[10px] uppercase tracking-wider text-slate-400">
               <span>Analysis</span>
-              <span className="text-center w-16">Detectors</span>
+              <span className="text-center">Detectors</span>
               <span className="text-right">Results</span>
             </div>
             {categoryRows.map((row) => (
               <div
                 key={row.id}
-                className="grid grid-cols-[1fr_auto_auto] gap-3 px-3 py-1.5 border-t border-slate-700 items-center"
+                className="grid grid-cols-[1fr_3.5rem_8.75rem] gap-2 px-3 py-1.5 border-t border-slate-700 items-center"
               >
                 <span className="text-sm truncate">{row.name}</span>
-                <span className="text-sm text-center font-mono w-16">
+                <span className="text-sm text-center font-mono tabular-nums">
                   {row.detectorCount}
                 </span>
-                <span className="text-right">
+                <span className="flex justify-end">
                   <VerdictBadge verdict={row.verdict} size="sm" />
                 </span>
               </div>

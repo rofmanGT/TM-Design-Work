@@ -149,7 +149,7 @@ export function HistoryPage() {
     <div className="min-h-[calc(100vh-5rem)] p-4 md:p-6 bg-white dark:bg-slate-950 text-[#041E42] dark:text-slate-100">
       {/* Top title row */}
       <div className="flex items-center justify-between mb-5 gap-3">
-        <h1 className="text-4xl font-bold">History</h1>
+        <h1 className="text-4xl font-bold tracking-tight">History</h1>
         <button
           onClick={exportCsv}
           className="inline-flex items-center gap-1.5 bg-[#00B5E2] hover:bg-[#0099C2] text-[#041E42] font-semibold text-sm px-4 py-2 rounded-md transition shadow-sm"
@@ -285,7 +285,7 @@ export function HistoryPage() {
 
       {/* Claims History title outside the card */}
       <div className="flex items-center justify-between mb-5 gap-3">
-        <h1 className="text-4xl font-bold">Claims History</h1>
+        <h1 className="text-4xl font-bold tracking-tight">Claims History</h1>
       </div>
 
       {/* Claims section card */}

@@ -103,14 +103,6 @@ export function UploadingPage() {
   return (
     <main className="bg-white dark:bg-slate-950 text-[#041E42] dark:text-slate-100 min-h-[calc(100vh-5rem)] flex items-center justify-center p-5">
       <div className="w-full max-w-xl">
-        <div className="flex items-center justify-center mb-8">
-          <img
-            src="/logos/truemedialogo.png"
-            alt="TrueMedia"
-            className="h-10 w-auto"
-          />
-        </div>
-
         <div className="bg-[#041E42] dark:bg-slate-900 text-white rounded-xl ring-1 ring-transparent dark:ring-slate-800 p-6 md:p-8">
           {/* Header */}
           <div className="flex items-start justify-between gap-3 mb-6">

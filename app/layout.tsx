@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TrueMedia.org — Analysis (replica)",
-  description: "Faithful React replica of the TrueMedia.org analysis page, used as a design canvas.",
+  title: "TrueMedia — Deepfake Detection (Design Mockup)",
+  description:
+    "Design mockup of the TrueMedia.org platform — an open-source deepfake detection project of Georgetown University's Media Integrity Initiative.",
 };
 
 // Inline script that sets the `dark` class on <html> BEFORE first paint to avoid a
