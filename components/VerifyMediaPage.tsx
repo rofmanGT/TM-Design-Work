@@ -24,7 +24,7 @@ import {
 } from "react-icons/fa6";
 import { VerdictBadge } from "@/components/ensemble";
 import { historyItems, claimHistory } from "@/components/commercial/sampleData";
-import { REAL_CASES, type RealCase } from "@/components/real/realData";
+import { REAL_CASES, caseThumbnail, type RealCase } from "@/components/real/realData";
 import { CLAIM_PILL } from "@/components/shared/claimStyles";
 
 type MainTab = "ai" | "false";
@@ -304,8 +304,8 @@ export function VerifyMediaPage() {
                 </button>
               </div>
               <div className="flex flex-col gap-5">
-                {REAL_CASES.slice(0, 5).map((c, i) => (
-                  <NotableCard key={c.id} c={c} index={i} />
+                {REAL_CASES.slice(0, 5).map((c) => (
+                  <NotableCard key={c.id} c={c} />
                 ))}
               </div>
               <a
@@ -492,16 +492,6 @@ function HistoryClaimsPreview() {
 // the real rank badge colors; never claims manipulation we can't back.
 // ─────────────────────────────────────────────────────────────────────
 
-// Distinct-ish gradient per card so the placeholder images look varied.
-const CASE_GRADIENTS = [
-  "from-amber-700 via-amber-600 to-rose-700",
-  "from-slate-700 via-slate-600 to-orange-800",
-  "from-zinc-700 via-stone-600 to-zinc-800",
-  "from-indigo-700 via-violet-700 to-purple-800",
-  "from-orange-700 via-red-700 to-rose-900",
-  "from-cyan-800 via-blue-800 to-indigo-900",
-];
-
 const TRUTH_PILL: Record<RealCase["groundTruth"], { label: (t: string) => string; classes: string }> = {
   fake: { label: (t) => `AI manipulated ${t}`, classes: "bg-[#771D1D] text-[#F8B4B5]" },
   authentic: { label: (t) => `Authentic ${t}`, classes: "bg-[#014737] text-[#84E1BD]" },
@@ -517,11 +507,11 @@ function hostnameOf(url?: string) {
   }
 }
 
-function NotableCard({ c, index }: { c: RealCase; index: number }) {
+function NotableCard({ c }: { c: RealCase }) {
   const TypeIcon = MEDIA_ICON[c.mediaType];
-  const gradient = CASE_GRADIENTS[index % CASE_GRADIENTS.length];
   const truth = TRUTH_PILL[c.groundTruth];
   const sourceHost = hostnameOf(c.citationUrl);
+  const thumb = caseThumbnail(c);
 
   return (
     <article className="w-full rounded-2xl border border-slate-300 dark:border-slate-700 bg-[#E2E2E2] dark:bg-slate-800 p-4 shadow-sm hover:shadow-md transition">
@@ -533,12 +523,14 @@ function NotableCard({ c, index }: { c: RealCase; index: number }) {
         <TypeIcon className="w-5 h-5 text-slate-500 dark:text-slate-400 shrink-0" />
       </div>
 
-      {/* Image with ground-truth pill */}
-      <div className="relative mt-3 h-32 rounded-xl overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
-        <div className="absolute inset-0 flex items-center justify-center text-white/30">
-          <TypeIcon className="w-12 h-12" />
-        </div>
+      {/* Real thumbnail frame (image/video) or generated mel spectrogram (audio) */}
+      <div className="relative mt-3 aspect-video rounded-xl overflow-hidden bg-slate-800">
+        <img
+          src={thumb}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover object-center"
+          loading="lazy"
+        />
         <div
           className={`absolute bottom-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full shadow ${truth.classes}`}
         >
@@ -584,8 +576,8 @@ function NotableCasesGrid() {
         </a>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {REAL_CASES.slice(0, 6).map((c, i) => (
-          <NotableCard key={c.id} c={c} index={i} />
+        {REAL_CASES.slice(0, 6).map((c) => (
+          <NotableCard key={c.id} c={c} />
         ))}
       </div>
     </>

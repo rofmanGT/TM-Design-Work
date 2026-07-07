@@ -443,6 +443,23 @@ export const REAL_CASES: RealCase[] = [
   },
 ];
 
+// Cover image for each case, all under /public/real/cases/<baseId>.jpg.
+//  • image + video: the REAL thumbnail frame, downloaded from the
+//    production bucket (truemedia-thumbnails.s3.us-east-2.amazonaws.com,
+//    keyed by media id with the extension stripped).
+//  • audio: a generated mel-style spectrogram (ffmpeg showspectrumpic,
+//    log frequency + magma colormap). The real audio wasn't publicly
+//    reachable, so these are representative visuals, not the exact file.
+export function caseThumbnail(c: RealCase): string {
+  const baseId = c.id.replace(/\.[^.]+$/, "");
+  return `/real/cases/${baseId}.jpg`;
+}
+
+/** True when the cover image is a generated spectrogram (audio cases). */
+export function isSpectrogram(c: RealCase): boolean {
+  return c.mediaType === "audio";
+}
+
 // ── Score thresholds ─────────────────────────────────────────────────
 // Source: apps/detect/app/generators.ts
 

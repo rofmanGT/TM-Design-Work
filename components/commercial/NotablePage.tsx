@@ -11,7 +11,7 @@ import {
   HiOutlineDocumentText,
   HiOutlineCheck,
 } from "react-icons/hi2";
-import { REAL_CASES, type RealCase } from "@/components/real/realData";
+import { REAL_CASES, caseThumbnail, isSpectrogram, type RealCase } from "@/components/real/realData";
 
 // ─────────────────────────────────────────────────────────────────────
 // The Notable Cases Archive — now backed by the REAL curated cases from
@@ -215,14 +215,29 @@ function CaseCard({ c, index }: { c: RealCase; index: number }) {
   const truth = TRUTH_CHIP[c.groundTruth];
   const sourceHost = hostnameOf(c.citationUrl);
   const caseId = caseIdFor(index);
+  const thumb = caseThumbnail(c);
+  const spectrogram = isSpectrogram(c);
 
   return (
     <article className="group flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 transition rounded-sm overflow-hidden">
-      {/* Cover plate — reserved, no gradient */}
-      <div className={`relative h-32 ${treatment}`}>
-        <div className="absolute inset-0 flex items-center justify-center text-white/15">
-          <TypeIcon className="w-14 h-14" />
+      {/* Cover plate — real thumbnail frame (image/video) or generated mel
+          spectrogram (audio), framed at video ratio and centered. */}
+      <div className={`relative aspect-video ${treatment}`}>
+        <img
+          src={thumb}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover object-center"
+          loading="lazy"
+        />
+        {/* Media-type glyph, bottom-right, always visible */}
+        <div className="absolute bottom-2 right-2 bg-black/50 text-white rounded-sm p-1">
+          <TypeIcon className="w-3.5 h-3.5" />
         </div>
+        {spectrogram && (
+          <div className="absolute bottom-2 left-2 bg-black/50 text-white text-[9px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded-sm">
+            Mel spectrogram
+          </div>
+        )}
         <div className="absolute top-2 left-2 bg-white/95 dark:bg-slate-100 text-slate-900 text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded-sm">
           {caseId}
         </div>
