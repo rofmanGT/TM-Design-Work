@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { ConfidenceBar } from "./ConfidenceBar";
 import { VerdictBadge } from "./VerdictBadge";
-import { VERDICT_STYLES, verdictFromConfidence, type Verdict } from "./verdict";
+import { verdictFromConfidence, type Verdict } from "./verdict";
 
 type Props = {
   name: string;
@@ -20,39 +20,33 @@ type Props = {
 
 export function DetectorCard({ name, description, confidence, verdict, weight, icon }: Props) {
   const v = verdict ?? verdictFromConfidence(confidence);
-  const s = VERDICT_STYLES[v];
 
   return (
-    <article className="bg-[#041E42] dark:bg-slate-900 text-white rounded-lg overflow-hidden ring-1 ring-transparent dark:ring-slate-800 hover:dark:ring-[#00B5E2]/30 transition">
+    <article className="bg-[#041E42] dark:bg-slate-900 text-white rounded-lg overflow-hidden ring-1 ring-black/5 dark:ring-slate-800 hover:ring-[#00B5E2]/40 dark:hover:ring-[#00B5E2]/30 transition">
       {/* Edge-to-edge confidence strip — color encodes the verdict tier */}
-      <ConfidenceBar value={confidence} height={4} background="bg-[#0A2348] dark:bg-slate-800" />
+      <ConfidenceBar value={confidence} height={3} background="bg-[#0A2348] dark:bg-slate-800" />
 
-      <div className="p-5">
-        <div className="flex items-start justify-between mb-3.5 gap-3">
-          <VerdictBadge verdict={v} />
-          <div className="text-right shrink-0">
-            <div className={`text-lg font-semibold leading-tight ${s.pillText}`}>{confidence}%</div>
-            <div className="text-[10px] uppercase tracking-wide text-slate-400 leading-tight">
-              Likely AI
-            </div>
-          </div>
-        </div>
+      <div className="p-4">
+        {/* Verdict pill only — the per-detector percentage is intentionally
+            hidden; the overall manipulation probability carries the number. */}
+        <VerdictBadge verdict={v} size="sm" />
 
-        <div className="flex items-center gap-2 font-bold text-base mb-3">
-          {icon}
+        <div className="mt-3 flex items-center gap-2 font-semibold text-[15px] leading-snug">
+          <span className="text-slate-400 shrink-0 [&>svg]:w-4 [&>svg]:h-4">{icon}</span>
           {name}
         </div>
 
+        {/* Description as quiet body copy behind a hairline — no box-in-box */}
         {description && (
-          <div className="bg-gray-700 dark:bg-slate-800 rounded-md p-3 text-sm leading-relaxed text-gray-200">
+          <p className="mt-2.5 pt-2.5 border-t border-white/10 text-[13px] leading-relaxed text-slate-400">
             {description}
-          </div>
+          </p>
         )}
 
         {weight !== undefined && (
-          <div className="mt-3 flex items-center justify-between text-[11px] text-slate-400">
+          <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
             <span className="uppercase tracking-wide">Ensemble weight</span>
-            <span className="text-slate-200 font-mono">{Math.round(weight * 100)}%</span>
+            <span className="text-slate-200 font-mono tabular-nums">{Math.round(weight * 100)}%</span>
           </div>
         )}
       </div>

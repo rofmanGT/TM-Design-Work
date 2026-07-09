@@ -16,6 +16,7 @@ import {
   HiOutlineScale,
   HiOutlineSparkles,
   HiOutlineCpuChip,
+  HiOutlineCheckBadge,
 } from "react-icons/hi2";
 import { CLAIM_PILL } from "@/components/shared/claimStyles";
 import type { ClaimVerdict } from "@/components/commercial/sampleData";
@@ -27,7 +28,6 @@ import {
   CLAIM_DISCLAIMER,
   type FactCheckModel,
   type EnsembleEvidence,
-  STANCE_META,
 } from "./veracityEnsembleData";
 
 // Icon per fact-check model.
@@ -88,7 +88,7 @@ export function useEnsembleSim(fresh: boolean) {
 
 export function ClaimHeader() {
   return (
-    <header className="flex items-center justify-end mb-5">
+    <header className="flex items-center justify-end -mt-3 mb-4">
       <div className="flex items-center gap-1">
         <IconBtn label="Share">
           <HiOutlineShare className="w-4 h-4" />
@@ -142,104 +142,95 @@ export function SubmittedTextPanel({
 // Shared by both designs. citedBy ties the source back to the models.
 // ─────────────────────────────────────────────────────────────────────
 
-export function EvidencePassageCard({
-  index,
-  evidence,
-}: {
-  index: number;
-  evidence: EnsembleEvidence;
-}) {
+export function EvidencePassageCard({ evidence }: { evidence: EnsembleEvidence }) {
   const [expanded, setExpanded] = useState(false);
-  const stance = STANCE_META[evidence.stance];
   const relevancePct = Math.round(evidence.relevance * 100);
 
   return (
-    <article className="bg-[#041E42] dark:bg-slate-900 text-white rounded-lg ring-1 ring-transparent dark:ring-slate-800 overflow-hidden">
-      <div className="p-5">
-        <div className="flex items-start gap-4">
-          <div className="w-8 h-8 rounded-md bg-slate-800 text-slate-300 flex items-center justify-center shrink-0 font-mono text-sm">
-            {index}
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-base font-semibold leading-snug">{evidence.title}</h3>
-            <div className="text-xs text-slate-400 mt-1 truncate">
-              {evidence.source}
-              {evidence.author && (
-                <span className="text-slate-300"> · {evidence.author}</span>
-              )}
-              <span className="mx-1.5 text-slate-600">·</span>
-              <span className="font-mono">{evidence.url}</span>
-            </div>
-          </div>
-          <div className="text-right shrink-0">
-            <div className="text-[10px] uppercase tracking-wide text-slate-400">
-              Relevance
-            </div>
-            <div className="font-mono text-sm text-white">{relevancePct}%</div>
-            <div className="mt-1 w-16 h-1 bg-slate-800 rounded-full overflow-hidden">
-              <div className="h-full bg-[#00B5E2]" style={{ width: `${relevancePct}%` }} />
-            </div>
-          </div>
-        </div>
+    <article className="bg-[#041E42] dark:bg-slate-900 text-white rounded-lg ring-1 ring-black/5 dark:ring-slate-800 hover:ring-[#00B5E2]/30 transition overflow-hidden p-4">
+      {/* Title + source (stance is conveyed by the lane header) */}
+      <h3 className="text-[15px] font-semibold leading-snug">{evidence.title}</h3>
+      <div className="text-[11px] text-slate-400 mt-1 truncate">
+        {evidence.source}
+        {evidence.author && <span className="text-slate-300"> · {evidence.author}</span>}
+        <span className="mx-1.5 text-slate-600">·</span>
+        <span className="font-mono">{evidence.url}</span>
+      </div>
 
-        {/* Stance + which models used it */}
-        <div className="mt-3 flex items-center gap-2 flex-wrap">
-          <span
-            className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded ${stance.pill}`}
-          >
-            <span className={`w-1.5 h-1.5 rounded-full ${stance.dot}`} />
-            {stance.label}
+      {/* Meta row: relevance meter (drives the sort order of the column) */}
+      <div className="mt-2.5 pt-2.5 border-t border-white/10 flex items-center gap-x-3 gap-y-1.5 flex-wrap text-[11px]">
+        <span className="inline-flex items-center gap-1.5 text-slate-400">
+          Relevance
+          <span className="inline-block w-10 h-1 bg-slate-800 rounded-full overflow-hidden align-middle">
+            <span className="block h-full bg-[#00B5E2]" style={{ width: `${relevancePct}%` }} />
           </span>
-          <span className="text-[11px] text-slate-400">
-            Cited by {evidence.citedBy.length} of 4 models
-          </span>
-        </div>
+          <span className="font-mono tabular-nums text-slate-200">{relevancePct}%</span>
+        </span>
+      </div>
 
-        {/* Key passage — the single most relevant sentence, quoted verbatim */}
-        <div className="mt-3">
-          <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">
-            Most relevant passage
-          </div>
-          <blockquote className="border-l-2 border-[#00B5E2]/60 pl-3 text-sm leading-relaxed text-slate-100">
-            {evidence.passage}
-          </blockquote>
-          {expanded && (
-            <div className="mt-3 pl-3 border-l-2 border-slate-700">
-              <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5">
-                In context · quoted from {evidence.source}
-              </div>
-              <div className="space-y-2.5 text-sm leading-relaxed text-slate-300">
-                {evidence.context.split("\n\n").map((para, i) => (
-                  <p key={i}>{para}</p>
-                ))}
-              </div>
+      {/* Key passage — the single most relevant sentence, quoted verbatim */}
+      <div className="mt-3">
+        <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5">
+          Most relevant passage
+        </div>
+        <blockquote className="border-l-2 border-[#00B5E2]/60 pl-3 text-[13px] leading-relaxed text-slate-100">
+          {evidence.passage}
+        </blockquote>
+        {expanded && (
+          <div className="mt-3 pl-3 border-l-2 border-slate-700">
+            <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5">
+              In context · quoted from {evidence.source}
             </div>
-          )}
-        </div>
+            <div className="space-y-2.5 text-[13px] leading-relaxed text-slate-300">
+              {evidence.context.split("\n\n").map((para, i) => (
+                <p key={i}>{para}</p>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
-        {/* Actions */}
-        <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
-          <button
-            onClick={() => setExpanded((v) => !v)}
-            className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white transition"
-          >
-            <HiOutlineChevronDown
-              className={`w-3.5 h-3.5 transition-transform ${expanded ? "rotate-180" : ""}`}
-            />
-            {expanded ? "Hide context" : "Show context"}
-          </button>
-          <a
-            href={evidence.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs text-[#00B5E2] hover:text-[#33D6FF] transition"
-          >
-            Read on {evidence.source}
-            <HiOutlineArrowTopRightOnSquare className="w-3.5 h-3.5" />
-          </a>
-        </div>
+      {/* Actions */}
+      <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between gap-3 flex-wrap">
+        <button
+          onClick={() => setExpanded((v) => !v)}
+          className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white transition"
+        >
+          <HiOutlineChevronDown
+            className={`w-3.5 h-3.5 transition-transform ${expanded ? "rotate-180" : ""}`}
+          />
+          {expanded ? "Hide context" : "Show context"}
+        </button>
+        <a
+          href={evidence.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs text-[#00B5E2] hover:text-[#33D6FF] transition"
+        >
+          Read on {evidence.source}
+          <HiOutlineArrowTopRightOnSquare className="w-3.5 h-3.5" />
+        </a>
       </div>
     </article>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// EvidenceList — one column of sources, ranked by relevance. Stance
+// grouping (Refutes / Context / Supports) was retired: "refutes" and
+// "supports" are verbs while "context" is a noun, so the labels need
+// rethinking before they can head their own columns. Until then, a single
+// relevance-sorted column is the honest presentation.
+// ─────────────────────────────────────────────────────────────────────
+
+export function EvidenceList({ evidence }: { evidence: EnsembleEvidence[] }) {
+  const ranked = [...evidence].sort((a, b) => b.relevance - a.relevance);
+  return (
+    <div className="grid gap-3 max-w-3xl">
+      {ranked.map((e) => (
+        <EvidencePassageCard key={e.id} evidence={e} />
+      ))}
+    </div>
   );
 }
 
@@ -249,19 +240,8 @@ export function EvidencePassageCard({
 
 export function EvidenceLegend({ count }: { count: number }) {
   return (
-    <div className="flex items-center gap-x-4 gap-y-1 flex-wrap text-[11px] text-slate-500 dark:text-slate-400">
-      <span className="inline-flex items-center gap-1">
-        <span className="w-1.5 h-1.5 rounded-full bg-red-400" /> Refutes
-      </span>
-      <span className="inline-flex items-center gap-1">
-        <span className="w-1.5 h-1.5 rounded-full bg-amber-400" /> Context
-      </span>
-      <span className="inline-flex items-center gap-1">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Supports
-      </span>
-      <span className="text-slate-400 dark:text-slate-500">
-        · {count} sources, ranked by relevance · one passage each, expand for context
-      </span>
+    <div className="text-[11px] text-slate-500 dark:text-slate-400">
+      {count} sources, ranked by relevance · one passage each, expand for context
     </div>
   );
 }
@@ -272,19 +252,26 @@ export function EvidenceLegend({ count }: { count: number }) {
 // restatement bar ("TrueMedia.org verdict: likely false.").
 // ─────────────────────────────────────────────────────────────────────
 
-const BANNER: Record<ClaimVerdict, { bar: string; label: string; word: string }> = {
-  "likely-false": { bar: "bg-[#E5341F]", label: "Likely false", word: "likely false" },
-  "likely-true": { bar: "bg-emerald-600", label: "Likely true", word: "likely true" },
-  unresolved: { bar: "bg-slate-500", label: "Unresolved", word: "unresolved" },
-  mixed: { bar: "bg-amber-500", label: "Mixed evidence", word: "mixed evidence" },
+// Labels match the production repo's verdict `longSummary` strings
+// (data/claimVerdict.ts). Our four verdicts map to the real four:
+// likely-true←low, likely-false←high, mixed←uncertain, unresolved←unknown.
+const BANNER: Record<ClaimVerdict, { bar: string; label: string }> = {
+  "likely-false": { bar: "bg-[#E5341F]", label: "Likely false" },
+  "likely-true": { bar: "bg-emerald-600", label: "Likely true" },
+  mixed: { bar: "bg-amber-500", label: "Mixed or unclear evidence" },
+  unresolved: { bar: "bg-slate-500", label: "Not enough evidence to verify" },
 };
 
 export function ClaimVerdictBanner({
   verdict,
   isLoading,
+  humanVerified = false,
 }: {
   verdict: ClaimVerdict;
   isLoading: boolean;
+  /** Set when a human analyst has confirmed the verdict (ground truth).
+      Mirrors the production "Verified by human analyst" badge. */
+  humanVerified?: boolean;
 }) {
   if (isLoading) {
     return (
@@ -305,8 +292,16 @@ export function ClaimVerdictBanner({
       <div className={`${b.bar} text-white text-center font-bold text-xl md:text-2xl py-4 px-4`}>
         Verdict: {b.label}
       </div>
-      <div className="bg-slate-200 dark:bg-slate-800 text-[#041E42] dark:text-slate-200 px-5 py-3 text-sm md:text-base border-t border-black/10 dark:border-slate-700">
-        TrueMedia.org verdict: <strong>{b.word}</strong>.
+      <div className="bg-slate-200 dark:bg-slate-800 text-[#041E42] dark:text-slate-200 px-5 py-3 text-sm md:text-base border-t border-black/10 dark:border-slate-700 flex items-center justify-between gap-3">
+        <span>
+          TrueMedia.org verdict: <strong>{b.label.toLowerCase()}</strong>.
+        </span>
+        {humanVerified && (
+          <span className="inline-flex items-center gap-1.5 text-sm text-[#0883a3] dark:text-[#33D6FF] shrink-0">
+            <HiOutlineCheckBadge className="w-5 h-5" />
+            Verified by human analyst
+          </span>
+        )}
       </div>
     </div>
   );
@@ -333,12 +328,15 @@ export function BehindTheVerdictPanel({
   doneCount,
   showDetectors = true,
   consensus,
+  summary = RESULTS_SUMMARY,
 }: {
   isLoading: boolean;
   isModelDone: (m: FactCheckModel) => boolean;
   doneCount: number;
   showDetectors?: boolean;
   consensus?: { agree: number; total: number };
+  /** The one-line Results Summary for the current verdict. */
+  summary?: string;
 }) {
   return (
     <section className="rounded-lg overflow-hidden ring-1 ring-black/10 dark:ring-slate-700 flex flex-col">
@@ -352,7 +350,7 @@ export function BehindTheVerdictPanel({
         {/* Results summary */}
         <div className="px-5 py-4 border-b border-black/10 dark:border-slate-700">
           <div className="text-[11px] uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
-            Results Summary
+            Combined Result Summary
           </div>
           {isLoading ? (
             <div className="text-lg">
@@ -361,7 +359,7 @@ export function BehindTheVerdictPanel({
             </div>
           ) : (
             <>
-              <div className="text-lg">{RESULTS_SUMMARY}</div>
+              <div className="text-lg">{summary}</div>
               {consensus && (
                 <div className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                   {consensus.agree} of {consensus.total} models agree
@@ -408,17 +406,14 @@ function DetectorRow({ model, done }: { model: FactCheckModel; done: boolean }) 
       <div className="flex items-center gap-2 min-w-0">
         <Icon className="w-4 h-4 shrink-0 text-slate-500 dark:text-slate-400" />
         <span className="font-medium truncate">{model.name}</span>
+        {/* No per-model percentage: the current text models return a label,
+            not a confidence score. */}
         {done && (
-          <>
-            <span
-              className={`shrink-0 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded ${chip.bg}`}
-            >
-              {chip.label}
-            </span>
-            <span className="shrink-0 font-mono text-xs text-slate-500 dark:text-slate-400">
-              {model.confidence}%
-            </span>
-          </>
+          <span
+            className={`shrink-0 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded ${chip.bg}`}
+          >
+            {chip.label}
+          </span>
         )}
       </div>
       {done ? (

@@ -5,6 +5,7 @@ import {
   FACT_CHECK_MODELS,
   ENSEMBLE_EVIDENCE,
   aggregateEnsemble,
+  RESULTS_SUMMARY_BY_VERDICT,
 } from "./veracityEnsembleData";
 import {
   useEnsembleSim,
@@ -12,7 +13,7 @@ import {
   ClaimVerdictBanner,
   SubmittedTextPanel,
   BehindTheVerdictPanel,
-  EvidencePassageCard,
+  EvidenceList,
   EvidenceLegend,
   Spinner,
 } from "./veracityShared";
@@ -30,9 +31,10 @@ export function VeracityModelPanel({ text, fresh }: { text: string; fresh: boole
 
   return (
     <main className="min-h-screen bg-white dark:bg-slate-950 text-[#041E42] dark:text-slate-100 p-5 md:p-8">
-      <ClaimHeader />
-
       <ClaimVerdictBanner verdict={agg.verdict} isLoading={isLoading} />
+
+      {/* Share / export actions sit under the verdict banner */}
+      <ClaimHeader />
 
       {/* Hero */}
       <div className="grid md:grid-cols-2 gap-5">
@@ -42,6 +44,7 @@ export function VeracityModelPanel({ text, fresh }: { text: string; fresh: boole
           isModelDone={isModelDone}
           doneCount={doneModels.length}
           showDetectors
+          summary={RESULTS_SUMMARY_BY_VERDICT[agg.verdict]}
         />
       </div>
 
@@ -61,11 +64,7 @@ export function VeracityModelPanel({ text, fresh }: { text: string; fresh: boole
             <span className="ml-2">Evidence and sources are still loading…</span>
           </div>
         ) : (
-          <div className="grid gap-3">
-            {ENSEMBLE_EVIDENCE.map((e, i) => (
-              <EvidencePassageCard key={e.id} index={i + 1} evidence={e} />
-            ))}
-          </div>
+          <EvidenceList evidence={ENSEMBLE_EVIDENCE} />
         )}
       </section>
     </main>

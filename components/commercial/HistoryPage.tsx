@@ -22,6 +22,7 @@ import {
   type ClaimVerdict,
 } from "./sampleData";
 import { CLAIM_PILL } from "@/components/shared/claimStyles";
+import { sampleThumbnail } from "@/components/real/realData";
 
 // ─────────────────────────────────────────────────────────────────────
 // Filter / sort options
@@ -241,9 +242,10 @@ export function HistoryPage() {
           <div className="col-span-1 text-right">First Queried</div>
         </div>
 
-        {mediaFiltered.map((item) => {
+        {mediaFiltered.map((item, idx) => {
           const Icon = MEDIA_ICON[item.type];
           const border = VERDICT_BORDER[item.verdict] ?? "border-slate-600";
+          const isAudio = item.type === "audio";
           return (
             <a
               key={item.id}
@@ -252,9 +254,14 @@ export function HistoryPage() {
             >
               <div className="col-span-12 lg:col-span-3">
                 <div
-                  className={`relative aspect-video rounded-md border-2 ${border} bg-slate-800 overflow-hidden flex items-center justify-center`}
+                  className={`relative aspect-video rounded-md border-2 ${border} overflow-hidden ${isAudio ? "bg-white" : "bg-slate-800"}`}
                 >
-                  <Icon className="w-8 h-8 text-slate-600" />
+                  <img
+                    src={sampleThumbnail(item.type, idx)}
+                    alt=""
+                    className={`w-full h-full object-center ${isAudio ? "object-contain p-2" : "object-cover"}`}
+                    loading="lazy"
+                  />
                 </div>
               </div>
               <div className="col-span-12 lg:col-span-6 min-w-0">

@@ -26,7 +26,7 @@ const BUILD_HASH = "a1b9f3c";
 // media — safe to ship as a fixed string.
 const BIBTEX = `@misc{truemedia2026,
   title        = {TrueMedia: Open-Source Deepfake Detection},
-  author       = {{Georgetown University Media Integrity Initiative}},
+  author       = {{Georgetown University Media Integrity Lab}},
   year         = {2026},
   howpublished = {\\url{https://www.truemedia.org}},
   note         = {Ensemble detection platform, ${BUILD_VERSION}}
@@ -64,18 +64,16 @@ export function Footer() {
         <div className="grid grid-cols-2 lg:grid-cols-12 gap-8">
           {/* Brand + attribution */}
           <div className="col-span-2 lg:col-span-4">
-            <span className="inline-flex items-center bg-[#041E42] rounded-md px-3 py-2 mb-3">
-              {/* Official brand mark (white + lime on transparent) on its native navy */}
-              <img
-                src="/logos/trueMediaLogoTextDefault.svg"
-                alt="TrueMedia"
-                className="h-6 w-auto"
-              />
-            </span>
+            {/* Flat checkmark + "TrueMedia" lockup, per the live site */}
+            <img
+              src="/logos/truemedialogo.png"
+              alt="TrueMedia"
+              className="h-9 w-auto mb-3 rounded"
+            />
             <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400 max-w-xs">
               An open-source research project of{" "}
               <span className="font-medium text-[#041E42] dark:text-slate-200">
-                Georgetown University&rsquo;s Media Integrity Initiative
+                Georgetown University&rsquo;s Media Integrity Lab
               </span>
               .
             </p>

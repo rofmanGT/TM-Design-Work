@@ -26,7 +26,10 @@ export type VerdictStyle = {
   pillBg: string;
   pillText: string;
   bar: string;
+  /** Media-frame background — the production "neon" manipulation palette. */
   frame: string;
+  /** Text color for labels sitting on the neon frame (contrast-aware). */
+  frameText: string;
   Icon: ComponentType<{ className?: string }>;
 };
 
@@ -43,7 +46,8 @@ export const VERDICT_STYLES: Record<Verdict, VerdictStyle> = {
     pillBg: "bg-[#771D1D]",
     pillText: "text-[#F8B4B5]",
     bar: "bg-[#DC2626]",
-    frame: "bg-[#DC2626]",
+    frame: "bg-[#FF0F00]", // production manipulation-high-500
+    frameText: "text-white",
     Icon: HiOutlineXCircle,
   },
   "some-evidence": {
@@ -51,7 +55,8 @@ export const VERDICT_STYLES: Record<Verdict, VerdictStyle> = {
     pillBg: "bg-[#623112]",
     pillText: "text-[#FBCA16]",
     bar: "bg-[#F59E0B]",
-    frame: "bg-[#F59E0B]",
+    frame: "bg-[#F1F521]", // production manipulation-uncertain-500
+    frameText: "text-[#422006]",
     Icon: HiOutlineExclamationCircle,
   },
   "little-evidence": {
@@ -59,7 +64,8 @@ export const VERDICT_STYLES: Record<Verdict, VerdictStyle> = {
     pillBg: "bg-[#014737]",
     pillText: "text-[#84E1BD]",
     bar: "bg-[#84CC16]",
-    frame: "bg-[#84CC16]",
+    frame: "bg-[#93EF23]", // production manipulation-low-500
+    frameText: "text-[#052e16]",
     Icon: HiOutlineCheckCircle,
   },
   uncertain: {
@@ -67,7 +73,8 @@ export const VERDICT_STYLES: Record<Verdict, VerdictStyle> = {
     pillBg: "bg-[#374051]",
     pillText: "text-slate-300",
     bar: "bg-slate-500",
-    frame: "bg-slate-600",
+    frame: "bg-[#708090]", // production manipulation-unresolved-500
+    frameText: "text-white",
     Icon: HiOutlineQuestionMarkCircle,
   },
   pending: {
@@ -76,6 +83,7 @@ export const VERDICT_STYLES: Record<Verdict, VerdictStyle> = {
     pillText: "text-slate-300",
     bar: "bg-slate-600",
     frame: "bg-slate-600",
+    frameText: "text-white",
     Icon: HiOutlineClock,
   },
 };

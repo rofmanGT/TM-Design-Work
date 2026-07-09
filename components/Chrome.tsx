@@ -112,6 +112,10 @@ export function Chrome({ children }: { children: React.ReactNode }) {
 // ─────────────────────────────────────────────────────────────────────
 
 function Header({ onToggleSidebar }: { onToggleSidebar: () => void }) {
+  // Share is a "share this result" affordance — it belongs on result pages,
+  // not the home/query page where there is nothing yet to share.
+  const pathname = usePathname() ?? "";
+  const showShare = pathname !== "/";
   return (
     <header className="bg-[#041E42] fixed top-0 left-0 right-0 h-20 border-b border-slate-700 px-4 grid grid-cols-3 items-center z-50 text-white">
       <div className="flex items-center">
@@ -125,21 +129,19 @@ function Header({ onToggleSidebar }: { onToggleSidebar: () => void }) {
       </div>
 
       <div className="flex justify-center">
+        {/* Flat checkmark + "TrueMedia" lockup on navy, per the live site */}
         <a href="/" className="flex items-center">
-          {/* Official brand mark from the production repo (white + lime on transparent) */}
-          <img
-            src="/logos/trueMediaLogoTextDefault.svg"
-            alt="TrueMedia"
-            className="h-9 w-auto"
-          />
+          <img src="/logos/truemedialogo.png" alt="TrueMedia" className="h-10 w-auto" />
         </a>
       </div>
 
       <div className="flex justify-end items-center gap-6 pr-4">
-        <button className="flex items-center gap-2 hover:text-[#00B5E2] transition">
-          <HiOutlineShare className="w-5 h-5" />
-          <span className="text-sm">Share</span>
-        </button>
+        {showShare && (
+          <button className="flex items-center gap-2 hover:text-[#00B5E2] transition">
+            <HiOutlineShare className="w-5 h-5" />
+            <span className="text-sm">Share</span>
+          </button>
+        )}
         <img
           src="/logos/georgetownlogo.png"
           alt="Georgetown University"
@@ -166,8 +168,6 @@ function Sidebar({
   onToggleTheme: () => void;
 }) {
   const pathname = usePathname() ?? "";
-  // The veracity design-review page wants a clean chrome — no workspace label.
-  const hideWorkspace = pathname.startsWith("/lab/veracity");
 
   return (
     <aside
@@ -188,20 +188,6 @@ function Sidebar({
           <HiOutlineChevronLeft className="w-3 h-3" />
         )}
       </button>
-
-      {/* Workspace label */}
-      <div
-        className={`px-2.5 pt-1 pb-3 mb-2 border-b border-slate-300 dark:border-slate-700 overflow-hidden transition-opacity ${
-          collapsed || hideWorkspace ? "opacity-0 h-0 mb-0 pb-0 border-0" : "opacity-100"
-        }`}
-      >
-        <div className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
-          Workspace
-        </div>
-        <div className="text-sm font-semibold text-[#041E42] dark:text-slate-100 truncate">
-          Newsroom · Beta
-        </div>
-      </div>
 
       {/* Primary nav */}
       <ul className="space-y-0.5">

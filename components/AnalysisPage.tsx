@@ -24,7 +24,6 @@ import {
   verdictFromConfidence,
   type Verdict,
   type DetectorResult,
-  type CategoryRow,
 } from "@/components/ensemble";
 
 // ─────────────────────────────────────────────────────────────────────
@@ -108,14 +107,6 @@ const analysisData = {
 
 const allDetectors = analysisData.categories.flatMap((c) => c.detectors);
 
-// Category-level rollup for the summary table in the gauge card.
-const categoryRows: CategoryRow[] = analysisData.categories.map((c) => ({
-  id: c.id,
-  name: c.name,
-  detectorCount: c.detectors.length,
-  verdict: ensembleConfidence(c.detectors).verdict,
-}));
-
 // ─────────────────────────────────────────────────────────────────────
 // Hero — image + EnsembleGauge
 // ─────────────────────────────────────────────────────────────────────
@@ -153,7 +144,9 @@ function VerdictHero() {
         {/* Left: image + rich below-image content */}
         <div className="flex flex-col gap-3">
           <div className={`${frameBg} rounded-lg p-1`}>
-            <div className="text-center text-white font-bold py-1 text-sm">{verdictLabel}</div>
+            <div className={`text-center ${VERDICT_STYLES[peakVerdict].frameText} font-bold py-1 text-sm`}>
+              {verdictLabel}
+            </div>
             <div className="bg-slate-700 rounded-md h-60 flex items-center justify-center text-slate-400 text-xs">
               [ uploaded media ]
             </div>
@@ -199,13 +192,9 @@ function VerdictHero() {
           </dl>
         </div>
 
-        {/* Right: gauge-based ensemble (breakdown lives below in the category sections) */}
+        {/* Right: text-page order — verdict, detectors, compact gauge below */}
         <div className="flex flex-col gap-3.5">
-          <EnsembleGauge
-            detectors={allDetectors}
-            showBreakdown={false}
-            categoryRows={categoryRows}
-          />
+          <EnsembleGauge detectors={allDetectors} />
           <p className="text-slate-400 text-xs leading-relaxed">
             Disclaimer: TrueMedia.org uses state-of-the-art academic AI methods. However, errors
             can occur. Results are not legal proof of manipulation.
@@ -242,15 +231,22 @@ function IconButton({ children, label }: { children: React.ReactNode; label: str
 function CategorySection({ category }: { category: Category }) {
   return (
     <section className="flex-1 min-w-[280px] flex flex-col">
-      <div className="flex items-center gap-2 text-lg font-bold text-[#041E42] dark:text-slate-100 mb-1">
-        <span className="[&>svg]:w-5 [&>svg]:h-5">{category.icon}</span>
-        {category.name}
-        <span className="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-semibold px-1.5 py-0.5 rounded">
-          {category.detectors.length}
-        </span>
-      </div>
-      <div className="text-slate-600 dark:text-slate-400 text-xs mb-3 ml-7">
-        {category.subtitle}
+      {/* Understated editorial header: muted icon, tight title, mono count, hairline rule */}
+      <div className="pb-2.5 mb-3 border-b border-slate-200 dark:border-slate-800">
+        <div className="flex items-center gap-2">
+          <span className="text-slate-500 dark:text-slate-400 [&>svg]:w-[18px] [&>svg]:h-[18px]">
+            {category.icon}
+          </span>
+          <h2 className="text-base font-semibold tracking-tight text-[#041E42] dark:text-slate-100">
+            {category.name}
+          </h2>
+          <span className="text-[11px] font-mono tabular-nums text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-700 rounded-full min-w-[20px] h-5 px-1 inline-flex items-center justify-center">
+            {category.detectors.length}
+          </span>
+        </div>
+        <div className="text-slate-500 dark:text-slate-400 text-xs mt-0.5 ml-[26px]">
+          {category.subtitle}
+        </div>
       </div>
       <div className="flex flex-col gap-3 ml-0">
         {category.detectors.map((d) => (

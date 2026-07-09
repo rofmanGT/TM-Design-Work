@@ -28,20 +28,11 @@
   }
 }
 
-/* Gellix is the brand font — drop a .woff2 in /public/fonts/ and this will pick it up.
-   Until then, falls back to system-ui via the Tailwind font stack. */
-@font-face {
-  font-family: "Gellix";
-  src: url("/fonts/Gellix-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Gellix";
-  src: url("/fonts/Gellix-Bold.woff2") format("woff2");
-  font-weight: 700;
-  font-display: swap;
-}
+/* Font: the production repo declares Gellix but its @font-face is malformed
+   and never loads, so the real site renders in the system sans fallback.
+   We intentionally register no Gellix here to match that rendered look —
+   the Tailwind stack ("Gellix", system-ui, sans-serif) falls through to
+   system-ui exactly like production. */
 
 @keyframes blink-pill-anim {
   0%, 100% { opacity: 1 }

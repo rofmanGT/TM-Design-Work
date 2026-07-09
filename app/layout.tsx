@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "TrueMedia — Deepfake Detection (Design Mockup)",
   description:
-    "Design mockup of the TrueMedia.org platform — an open-source deepfake detection project of Georgetown University's Media Integrity Initiative.",
+    "Design mockup of the TrueMedia.org platform — an open-source deepfake detection project of Georgetown University's Media Integrity Lab.",
 };
 
 // Inline script that sets the `dark` class on <html> BEFORE first paint to avoid a

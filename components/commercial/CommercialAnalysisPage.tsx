@@ -17,8 +17,6 @@ import {
   HiOutlineChevronRight,
   HiOutlineFingerPrint,
   HiOutlineFaceSmile,
-  HiOutlineBeaker,
-  HiOutlineCodeBracket,
   HiOutlineChartBarSquare,
   HiOutlineFilm,
   HiOutlineMicrophone,
@@ -33,9 +31,8 @@ import {
   ensembleConfidence,
   type Verdict,
   type DetectorResult,
-  type CategoryRow,
 } from "@/components/ensemble";
-import { REAL_DETECTORS, REAL_CATEGORIES } from "@/components/real/realData";
+import { REAL_DETECTORS, REAL_CATEGORIES, type RealCategoryId } from "@/components/real/realData";
 
 // ─────────────────────────────────────────────────────────────────────
 // REAL detector roster for a video-with-audio case. Names, descriptions,
@@ -65,127 +62,141 @@ const rd = (key: string) => {
   return d;
 };
 
-const commercialAnalysis = {
-  fileName: "Senator_K_press_clip.mp4",
-  caseId: "tm-2026-06-23-0118",
-  source: { platform: "X (Twitter)", url: "x.com/example/status/…" },
-  categories: [
-    {
-      id: "face",
-      name: REAL_CATEGORIES.face.label,
-      subtitle: REAL_CATEGORIES.face.descrip,
-      icon: <HiOutlineFaceSmile className="w-7 h-7" />,
-      detectors: [
-        {
-          name: rd("genconvit").name,
-          description: rd("genconvit").descrip,
-          icon: <HiOutlineFaceSmile className="w-5 h-5" />,
-          confidence: 72,
-        },
-        {
-          name: rd("sensity-face").name,
-          description: rd("sensity-face").descrip,
-          icon: <HiOutlineFingerPrint className="w-5 h-5" />,
-          confidence: 64,
-        },
-      ],
-    },
-    {
-      id: "imagen",
-      name: REAL_CATEGORIES.imagen.label,
-      subtitle: REAL_CATEGORIES.imagen.descrip,
-      icon: <HiOutlineSparkles className="w-7 h-7" />,
-      detectors: [
-        {
-          name: rd("hive-video").name,
-          description: rd("hive-video").descrip,
-          icon: <HiOutlineFilm className="w-5 h-5" />,
-          confidence: 81,
-        },
-      ],
-    },
-    {
-      id: "audio",
-      name: REAL_CATEGORIES.audio.label,
-      subtitle: REAL_CATEGORIES.audio.descrip,
-      icon: <HiOutlineMicrophone className="w-7 h-7" />,
-      detectors: [
-        {
-          name: rd("wav2vec2").name,
-          description: rd("wav2vec2").descrip,
-          icon: <HiOutlineMicrophone className="w-5 h-5" />,
-          confidence: 86,
-        },
-        {
-          name: rd("dftotal").name,
-          description: rd("dftotal").descrip,
-          icon: <HiOutlineMusicalNote className="w-5 h-5" />,
-          confidence: 79,
-        },
-        {
-          name: rd("loccus").name,
-          description: rd("loccus").descrip,
-          icon: <HiOutlineMusicalNote className="w-5 h-5" />,
-          confidence: 74,
-        },
-      ],
-    },
-    {
-      id: "semantic",
-      name: REAL_CATEGORIES.semantic.label,
-      subtitle: REAL_CATEGORIES.semantic.descrip,
-      icon: <HiOutlineChatBubbleBottomCenterText className="w-7 h-7" />,
-      detectors: [
-        {
-          name: rd("openai-transcript").name,
-          description: rd("openai-transcript").descrip,
-          icon: <HiOutlineChatBubbleBottomCenterText className="w-5 h-5" />,
-          confidence: 41,
-        },
-      ],
-    },
-  ] as Category[],
-  details: {
+type MediaKind = "image" | "video" | "audio";
+
+type AnalysisView = {
+  fileName: string;
+  caseId: string;
+  heroImage: string;
+  /** Audio waveform is letterboxed on a light plate rather than cropped. */
+  heroContain?: boolean;
+  source: { platform: string; url: string };
+  fileType: string;
+  fileSize: string;
+  categories: Category[];
+};
+
+// Terse builders that pull real names + descriptions from realData.
+const det = (
+  key: string,
+  confidence: number,
+  icon: React.ReactNode
+): CategorizedDetector => ({
+  name: rd(key).name,
+  description: rd(key).descrip,
+  confidence,
+  icon,
+});
+const cat = (
+  id: RealCategoryId,
+  icon: React.ReactNode,
+  detectors: CategorizedDetector[]
+): Category => ({
+  id,
+  name: REAL_CATEGORIES[id].label,
+  subtitle: REAL_CATEGORIES[id].descrip,
+  icon,
+  detectors,
+});
+
+const FaceI = <HiOutlineFaceSmile className="w-5 h-5" />;
+const GenI = <HiOutlineSparkles className="w-5 h-5" />;
+const NoiseI = <HiOutlinePhoto className="w-5 h-5" />;
+const MicI = <HiOutlineMicrophone className="w-5 h-5" />;
+const NoteI = <HiOutlineMusicalNote className="w-5 h-5" />;
+const PrintI = <HiOutlineFingerPrint className="w-5 h-5" />;
+const TextI = <HiOutlineChatBubbleBottomCenterText className="w-5 h-5" />;
+const FilmI = <HiOutlineFilm className="w-5 h-5" />;
+
+// This demo reuses one documented example per media type (no real uploads
+// yet), so a top-right toggle previews each view. Every roster uses only the
+// detectors that actually apply to that media type, with real names/descrips.
+const MEDIA_VIEWS: Record<MediaKind, AnalysisView> = {
+  image: {
+    // Xóchitl Gálvez flag image — documented manipulation (RestOfWorld).
+    fileName: "galvez_flag_manipulated.jpg",
+    caseId: "tm-2026-06-23-0091",
+    heroImage: "/real/cases/pf8gnScszm1EmkrCb1EuIVX_tLg.jpg",
+    source: { platform: "X (Twitter)", url: "restofworld.org/…" },
+    fileType: "JPG",
+    fileSize: "1.2 MB",
+    categories: [
+      cat("imagen", GenI, [
+        det("sensity-image", 77, GenI),
+        det("microsoft", 69, GenI),
+        det("aion-image", 63, GenI),
+      ]),
+      cat("noise", NoiseI, [det("dire", 66, NoiseI), det("fire", 71, NoiseI)]),
+    ],
+  },
+  video: {
+    // Kim Jong Un PSA — documented deepfake (RepresentUs campaign).
+    fileName: "kim_jong_un_deepfake.mp4",
+    caseId: "tm-2026-06-23-0118",
+    heroImage: "/real/cases/PWfMimqFyAVS3lMocRqWBQYpPC8.jpg",
+    source: { platform: "Awareness campaign", url: "act.represent.us/…" },
     fileType: "MP4",
     fileSize: "8.2 MB",
-    processingTime: "4m 8s",
-    analyzedOn: "Tue, Jun 23, 2026",
-    ensembleVersion: "v2.3.1",
-    // Performance-context label (Georgetown label-design exploration, Idea 4):
-    // published benchmark + calibration metrics for this ensemble version.
-    benchmark: "Deepfake-Eval-2024",
-    benchmarkAuc: "0.81",
-    benchmarkFpr: "0.12",
+    categories: [
+      cat("face", FaceI, [
+        det("genconvit", 72, FaceI),
+        det("sensity-face", 64, PrintI),
+        det("intel", 69, FilmI),
+      ]),
+      cat("audio", MicI, [
+        det("wav2vec2", 86, MicI),
+        det("dftotal", 79, NoteI),
+        det("loccus", 74, NoteI),
+      ]),
+      cat("semantic", TextI, [det("openai-transcript", 41, TextI)]),
+    ],
+  },
+  audio: {
+    // Biden New Hampshire robocall — documented AI voice clone (AP).
+    fileName: "biden_robocall_nh.wav",
+    caseId: "tm-2026-06-23-0057",
+    heroImage: "/waveform.jpeg",
+    heroContain: true,
+    source: { platform: "Robocall", url: "apnews.com/…" },
+    fileType: "WAV",
+    fileSize: "2.4 MB",
+    categories: [
+      cat("audio", MicI, [
+        det("wav2vec2", 86, MicI),
+        det("dftotal", 82, NoteI),
+        det("loccus", 79, NoteI),
+        det("pindrop", 74, MicI),
+      ]),
+      cat("semantic", TextI, [det("openai-transcript", 68, TextI)]),
+    ],
   },
 };
 
-const allDetectors: DetectorResult[] = commercialAnalysis.categories.flatMap((c) =>
-  c.detectors.map((d) => ({
-    name: d.name,
-    confidence: d.confidence,
-    verdict: d.verdict,
-    weight: d.weight,
-  }))
-);
-
-// ─────────────────────────────────────────────────────────────────────
-// Simulation timing — the upload/fetch already finished on
-// /media/uploading before we arrive here, so this page only runs the
-// detector phase: each entry is the elapsed ms at which that detector's
-// result lands. Keys must match the roster names above.
-// ─────────────────────────────────────────────────────────────────────
-
-const FRESH_TIMING: Record<string, number> = {
-  [rd("openai-transcript").name]: 700,
-  [rd("wav2vec2").name]: 1600,
-  [rd("dftotal").name]: 2400,
-  [rd("loccus").name]: 3100,
-  [rd("hive-video").name]: 3900,
-  [rd("sensity-face").name]: 4500,
-  [rd("genconvit").name]: 5000,
+const SHARED_DETAILS = {
+  processingTime: "4m 8s",
+  analyzedOn: "Tue, Jun 23, 2026",
+  ensembleVersion: "v2.3.1",
+  calibrated: "Mar 2026",
 };
 
-const FRESH_TOTAL_MS = Math.max(...Object.values(FRESH_TIMING));
+const MEDIA_TABS: { kind: MediaKind; label: string; Icon: React.ComponentType<{ className?: string }> }[] = [
+  { kind: "image", label: "Image", Icon: HiOutlinePhoto },
+  { kind: "video", label: "Video", Icon: HiOutlineFilm },
+  { kind: "audio", label: "Audio", Icon: HiOutlineMusicalNote },
+];
+
+// Per-detector completion offsets (ms) for the analyses phase, staggered by
+// position in the active roster so the stream feels natural for any view.
+function timingFor(categories: Category[]): { map: Record<string, number>; total: number } {
+  const map: Record<string, number> = {};
+  categories
+    .flatMap((c) => c.detectors)
+    .forEach((d, i) => {
+      map[d.name] = 700 + i * 550;
+    });
+  const total = Math.max(...Object.values(map), 700);
+  return { map, total };
+}
 
 // ─────────────────────────────────────────────────────────────────────
 // Component
@@ -195,9 +206,18 @@ export function CommercialAnalysisPage() {
   const search = useSearchParams();
   const fresh = search.get("fresh") === "1";
 
-  // Pick download duration by media type. URL submissions default to "url".
-  // Uploads pass type=image|video|audio from the Query page.
-  const [elapsed, setElapsed] = useState(fresh ? 0 : FRESH_TOTAL_MS + 1);
+  // Media-type preview toggle (demo affordance; defaults to the ?type= param).
+  const urlType = search.get("type");
+  const [mediaView, setMediaView] = useState<MediaKind>(
+    urlType === "image" || urlType === "audio" ? urlType : "video"
+  );
+  const view = MEDIA_VIEWS[mediaView];
+  const { map: freshTiming, total: freshTotalMs } = useMemo(
+    () => timingFor(view.categories),
+    [view]
+  );
+
+  const [elapsed, setElapsed] = useState(fresh ? 0 : freshTotalMs + 1);
   const startedAt = useRef(Date.now());
 
   useEffect(() => {
@@ -206,26 +226,26 @@ export function CommercialAnalysisPage() {
     function tick() {
       const e = Date.now() - startedAt.current;
       setElapsed(e);
-      if (e < FRESH_TOTAL_MS + 1500) {
+      if (e < freshTotalMs + 1500) {
         raf = requestAnimationFrame(tick);
       }
     }
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [fresh]);
+  }, [fresh, freshTotalMs]);
 
   // Live detector list — when fresh, override verdict to "pending" until each completes.
   const liveCategories = useMemo(() => {
-    if (!fresh || elapsed >= FRESH_TOTAL_MS) return commercialAnalysis.categories;
-    return commercialAnalysis.categories.map((cat) => ({
-      ...cat,
-      detectors: cat.detectors.map((d) => {
-        const completeAt = FRESH_TIMING[d.name] ?? FRESH_TOTAL_MS;
+    if (!fresh || elapsed >= freshTotalMs) return view.categories;
+    return view.categories.map((c) => ({
+      ...c,
+      detectors: c.detectors.map((d) => {
+        const completeAt = freshTiming[d.name] ?? freshTotalMs;
         const done = elapsed >= completeAt;
         return done ? d : { ...d, verdict: "pending" as Verdict };
       }),
     }));
-  }, [fresh, elapsed]);
+  }, [fresh, elapsed, view, freshTiming, freshTotalMs]);
 
   const liveDetectors: DetectorResult[] = liveCategories.flatMap((c) =>
     c.detectors.map((d) => ({
@@ -235,14 +255,6 @@ export function CommercialAnalysisPage() {
       weight: d.weight,
     }))
   );
-
-  // Category-level rollup for the gauge's summary table.
-  const liveCategoryRows: CategoryRow[] = liveCategories.map((c) => ({
-    id: c.id,
-    name: c.name,
-    detectorCount: c.detectors.length,
-    verdict: ensembleConfidence(c.detectors).verdict,
-  }));
 
   const { confidence, verdict, agreeingCount, activeCount } = ensembleConfidence(liveDetectors);
 
@@ -256,54 +268,83 @@ export function CommercialAnalysisPage() {
     .reduce((m, d) => Math.max(m, d.confidence), 0);
   const peakVerdict = verdictFromConfidence(peakConfidence);
   const frameBg = loadingPhase ? "bg-slate-600" : VERDICT_STYLES[peakVerdict].frame;
+  const frameTextColor = loadingPhase ? "text-white" : VERDICT_STYLES[peakVerdict].frameText;
   const frameLabel = loadingPhase
     ? "Analysis in progress"
     : VERDICT_STYLES[peakVerdict].label + " of Manipulation";
 
   return (
     <main className="bg-white dark:bg-slate-950 text-[#041E42] dark:text-slate-100 min-h-screen p-5 md:p-8">
-      {/* Breadcrumbs */}
-      <nav className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-3">
-        <a href="/" className="hover:text-[#041E42] dark:hover:text-slate-100">
-          Verify Media
-        </a>
-        <HiOutlineChevronRight className="w-3 h-3" />
-        <a
-          href="/media/history"
-          className="hover:text-[#041E42] dark:hover:text-slate-100"
-        >
-          Analyses
-        </a>
-        <HiOutlineChevronRight className="w-3 h-3" />
-        <span className="text-[#041E42] dark:text-slate-100 font-medium font-mono">
-          {commercialAnalysis.caseId}
-        </span>
-      </nav>
+      {/* Breadcrumbs + media-type preview toggle */}
+      <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+        <nav className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+          <a href="/" className="hover:text-[#041E42] dark:hover:text-slate-100">
+            Verify Media
+          </a>
+          <HiOutlineChevronRight className="w-3 h-3" />
+          <a
+            href="/media/history"
+            className="hover:text-[#041E42] dark:hover:text-slate-100"
+          >
+            Analyses
+          </a>
+          <HiOutlineChevronRight className="w-3 h-3" />
+          <span className="text-[#041E42] dark:text-slate-100 font-medium font-mono">
+            {view.caseId}
+          </span>
+        </nav>
+
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] uppercase tracking-wider text-slate-400 hidden sm:inline">
+            Demo · preview by media type
+          </span>
+          <div className="inline-flex rounded-md border border-slate-300 dark:border-slate-700 p-0.5 bg-slate-100 dark:bg-slate-900">
+            {MEDIA_TABS.map((t) => (
+              <button
+                key={t.kind}
+                onClick={() => setMediaView(t.kind)}
+                className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded transition ${
+                  mediaView === t.kind
+                    ? "bg-[#041E42] text-white dark:bg-[#00B5E2] dark:text-[#041E42]"
+                    : "text-slate-600 dark:text-slate-300 hover:text-[#041E42] dark:hover:text-white"
+                }`}
+              >
+                <t.Icon className="w-3.5 h-3.5" />
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
 
       <section className="bg-[#041E42] dark:bg-slate-900 text-white p-5 rounded-lg ring-1 ring-transparent dark:ring-slate-800">
-              <div className="flex items-end justify-between mb-5 gap-3 flex-wrap">
+              <div className="mb-5">
                 <h1 className="text-3xl font-bold tracking-tight leading-none">Is this Real?</h1>
-                <span className="text-[11px] uppercase tracking-wider text-slate-400 font-mono">
-                  {commercialAnalysis.details.ensembleVersion} · calibrated Mar 2026
-                </span>
               </div>
 
               <div className="grid md:grid-cols-2 gap-5">
                 {/* Image + below-image rich content */}
                 <div className="flex flex-col gap-3">
                   <div className={`${frameBg} rounded-lg p-1`}>
-                    <div className="text-center text-white font-bold py-1 text-sm">
+                    <div className={`text-center ${frameTextColor} font-bold py-1 text-sm`}>
                       {frameLabel}
                     </div>
-                    <div className="bg-slate-700 rounded-md h-60 flex items-center justify-center text-slate-400 text-xs">
-                      [ uploaded media ]
+                    <div className={`relative rounded-md h-60 overflow-hidden ${view.heroContain ? "bg-white" : "bg-slate-900"}`}>
+                      <img
+                        src={view.heroImage}
+                        alt="Analyzed media"
+                        className={`absolute inset-0 w-full h-full object-center ${view.heroContain ? "object-contain p-4" : "object-cover"}`}
+                      />
+                      {loadingPhase && (
+                        <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-[1px]" />
+                      )}
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div className="inline-flex items-center gap-1.5 bg-slate-800 text-slate-300 text-[11px] font-semibold px-2 py-1 rounded-full min-w-0">
                       <HiOutlineArrowUpTray className="w-3 h-3 shrink-0" />
-                      <span className="truncate">{commercialAnalysis.fileName}</span>
+                      <span className="truncate">{view.fileName}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <IconButton label="Share">
@@ -324,36 +365,34 @@ export function CommercialAnalysisPage() {
                   <dl className="bg-slate-800/50 rounded-md px-3 py-2.5 text-xs grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5">
                     <dt className="text-slate-400">Source</dt>
                     <dd className="text-white">
-                      {commercialAnalysis.source.platform}
-                      {commercialAnalysis.source.url && (
+                      {view.source.platform}
+                      {view.source.url && (
                         <span className="text-slate-400 ml-1.5 font-mono">
-                          {commercialAnalysis.source.url}
+                          {view.source.url}
                         </span>
                       )}
                     </dd>
                     <dt className="text-slate-400">File</dt>
                     <dd className="text-white font-mono">
-                      {commercialAnalysis.details.fileType} ·{" "}
-                      {commercialAnalysis.details.fileSize}
+                      {view.fileType} · {view.fileSize}
                     </dd>
                     <dt className="text-slate-400">Analyzed</dt>
                     <dd className="text-white">
-                      {commercialAnalysis.details.analyzedOn}{" "}
+                      {SHARED_DETAILS.analyzedOn}{" "}
                       <span className="text-slate-400 font-mono">
-                        · {commercialAnalysis.details.processingTime}
+                        · {SHARED_DETAILS.processingTime}
                       </span>
                     </dd>
                     <dt className="text-slate-400">Case ID</dt>
-                    <dd className="text-white font-mono">{commercialAnalysis.caseId}</dd>
+                    <dd className="text-white font-mono">{view.caseId}</dd>
                   </dl>
                 </div>
 
-                {/* Right: EnsembleGauge — accepts loading phase + live data */}
+                {/* Right: text-page order — verdict, detectors individually,
+                    then the compact gauge with the percentage under it */}
                 <div className="flex flex-col gap-3.5">
                   <EnsembleGauge
                     detectors={liveDetectors}
-                    showBreakdown={false}
-                    categoryRows={liveCategoryRows}
                     loadingPhase={loadingPhase}
                   />
                   <p className="text-slate-400 text-xs leading-relaxed">
@@ -377,20 +416,27 @@ export function CommercialAnalysisPage() {
             key={cat.id}
             className="flex-1 min-w-[280px] flex flex-col"
           >
-            <div className="flex items-center gap-2 text-lg font-bold text-[#041E42] dark:text-slate-100 mb-1">
-              <span className="[&>svg]:w-5 [&>svg]:h-5">{cat.icon}</span>
-              {cat.name}
-              <span className="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-semibold px-1.5 py-0.5 rounded">
-                {cat.detectors.length}
-              </span>
-            </div>
-            <div className="text-slate-600 dark:text-slate-400 text-xs mb-3 ml-7">
-              {cat.subtitle}
+            {/* Understated editorial header: muted icon, tight title, mono count, hairline rule */}
+            <div className="pb-2.5 mb-3 border-b border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <span className="text-slate-500 dark:text-slate-400 [&>svg]:w-[18px] [&>svg]:h-[18px]">
+                  {cat.icon}
+                </span>
+                <h2 className="text-base font-semibold tracking-tight text-[#041E42] dark:text-slate-100">
+                  {cat.name}
+                </h2>
+                <span className="text-[11px] font-mono tabular-nums text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-700 rounded-full min-w-[20px] h-5 px-1 inline-flex items-center justify-center">
+                  {cat.detectors.length}
+                </span>
+              </div>
+              <div className="text-slate-500 dark:text-slate-400 text-xs mt-0.5 ml-[26px]">
+                {cat.subtitle}
+              </div>
             </div>
             <div className="flex flex-col gap-3">
-              {cat.detectors.map((d) => (
+              {cat.detectors.map((d, i) => (
                 <DetectorCard
-                  key={d.name}
+                  key={`${cat.id}-${i}-${d.name}`}
                   name={d.name}
                   description={d.description}
                   confidence={d.confidence}
@@ -413,28 +459,22 @@ export function CommercialAnalysisPage() {
           <DetailRow
             icon={<HiOutlinePhoto />}
             label="File type"
-            value={`${commercialAnalysis.details.fileType} · ${commercialAnalysis.details.fileSize}`}
+            value={`${view.fileType} · ${view.fileSize}`}
           />
           <DetailRow
             icon={<HiOutlineClock />}
             label="Processing time"
-            value={commercialAnalysis.details.processingTime}
+            value={SHARED_DETAILS.processingTime}
           />
           <DetailRow
             icon={<HiOutlineCalendar />}
             label="Analyzed on"
-            value={commercialAnalysis.details.analyzedOn}
+            value={SHARED_DETAILS.analyzedOn}
           />
           <DetailRow
             icon={<HiOutlineInformationCircle />}
             label="Ensemble version"
-            value={commercialAnalysis.details.ensembleVersion}
-            mono
-          />
-          <DetailRow
-            icon={<HiOutlineChartBarSquare />}
-            label={`Benchmark · ${commercialAnalysis.details.benchmark}`}
-            value={`AUC ${commercialAnalysis.details.benchmarkAuc} · FPR ${commercialAnalysis.details.benchmarkFpr}`}
+            value={`${SHARED_DETAILS.ensembleVersion} · calibrated ${SHARED_DETAILS.calibrated}`}
             mono
           />
           <button
@@ -447,69 +487,7 @@ export function CommercialAnalysisPage() {
         </div>
       </section>
 
-      {/* TRANSPARENCY & REPRODUCIBILITY — open-science provenance for the verdict */}
-      <section className="mt-6">
-        <div className="flex items-center gap-2 text-lg font-bold text-[#041E42] dark:text-slate-100 mb-3">
-          <HiOutlineBeaker className="w-5 h-5" />
-          Transparency &amp; reproducibility
-        </div>
-        <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 px-5 py-4">
-          <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
-            <ReproStat
-              label="Models in ensemble"
-              value={`${allDetectors.length} detectors`}
-            />
-            <ReproStat label="Aggregation" value="Weighted mean of scores" />
-            <ReproStat
-              label="Ensemble version"
-              value={commercialAnalysis.details.ensembleVersion}
-              mono
-            />
-            <ReproStat label="Calibrated" value="Mar 2026" />
-            <div className="ml-auto flex items-center gap-3">
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#00B5E2]/15 text-[#0883a3] dark:text-[#33D6FF] ring-1 ring-[#00B5E2]/30">
-                <HiOutlineCodeBracket className="w-3.5 h-3.5" />
-                Open methodology
-              </span>
-              <a
-                href="#"
-                className="text-xs text-[#00B5E2] hover:underline whitespace-nowrap"
-              >
-                Model cards &amp; weights →
-              </a>
-            </div>
-          </div>
-          <p className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
-            Each detector&rsquo;s score and ensemble weight are listed above. The
-            headline probability is their weighted mean — every input to the
-            verdict is shown, so the result can be independently reproduced.
-          </p>
-        </div>
-      </section>
     </main>
-  );
-}
-
-function ReproStat({
-  label,
-  value,
-  mono,
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-}) {
-  return (
-    <div>
-      <div className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-0.5">
-        {label}
-      </div>
-      <div
-        className={`text-sm text-[#041E42] dark:text-slate-100 font-medium ${mono ? "font-mono" : ""}`}
-      >
-        {value}
-      </div>
-    </div>
   );
 }
 

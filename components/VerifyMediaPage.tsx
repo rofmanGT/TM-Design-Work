@@ -24,7 +24,13 @@ import {
 } from "react-icons/fa6";
 import { VerdictBadge } from "@/components/ensemble";
 import { historyItems, claimHistory } from "@/components/commercial/sampleData";
-import { REAL_CASES, caseThumbnail, type RealCase } from "@/components/real/realData";
+import {
+  REAL_CASES,
+  caseThumbnail,
+  sampleThumbnail,
+  isWaveform,
+  type RealCase,
+} from "@/components/real/realData";
 import { CLAIM_PILL } from "@/components/shared/claimStyles";
 
 type MainTab = "ai" | "false";
@@ -124,88 +130,88 @@ export function VerifyMediaPage() {
         <section className="bg-[#041E42] dark:bg-slate-900 rounded-b-lg p-5 md:p-6 ring-1 ring-transparent dark:ring-slate-800">
           {mainTab === "ai" && (
             <>
-              {/* Sub-tab pills */}
-              <div className="inline-flex rounded-md bg-slate-900/60 dark:bg-slate-800 p-1 mb-4">
-                {(["url", "upload"] as const).map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setAiSubTab(t)}
-                    className={`px-3.5 py-1.5 rounded text-xs font-medium transition ${
-                      aiSubTab === t
-                        ? "bg-[#00B5E2] text-[#041E42]"
-                        : "text-slate-300 hover:text-white"
-                    }`}
-                  >
-                    {t === "url" ? "Social Media URL" : "Upload File"}
-                  </button>
-                ))}
-              </div>
+              {/* Light inner panel — high-contrast entry area, per the live site */}
+              <div className="bg-slate-200 dark:bg-slate-300 rounded-lg p-5 md:p-6">
+                <div className="text-lg font-bold text-[#041E42] mb-3">
+                  Add social media post
+                </div>
 
-              {aiSubTab === "url" ? (
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    goAnalyzeUrl();
-                  }}
-                >
-                  <label className="block text-[11px] uppercase tracking-wide text-slate-400 mb-2">
-                    Add social media post
-                  </label>
-                  <div className="flex gap-2">
+                {aiSubTab === "url" ? (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      goAnalyzeUrl();
+                    }}
+                    className="flex gap-3"
+                  >
                     <input
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
                       type="text"
-                      placeholder="Paste a URL from X, Reddit, Truth Social, Facebook, Instagram, Google Drive…"
-                      className="flex-1 bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 text-sm rounded-md px-3 py-2.5 focus:outline-none focus:border-[#00B5E2] focus:ring-1 focus:ring-[#00B5E2]"
+                      placeholder="Add a URL…"
+                      className="flex-1 bg-slate-700 border border-slate-600 text-white placeholder-slate-400 text-base rounded-lg px-4 py-3 focus:outline-none focus:border-[#00B5E2] focus:ring-1 focus:ring-[#00B5E2]"
                     />
                     <button
                       type="submit"
-                      className="bg-[#00B5E2] hover:bg-[#0099C2] text-[#041E42] font-semibold text-sm px-5 rounded-md flex items-center gap-2 transition shrink-0"
+                      className="bg-[#00B5E2] hover:bg-[#0099C2] text-[#041E42] font-semibold text-base px-6 rounded-lg flex items-center gap-2 transition shrink-0"
                     >
                       Analyze
                       <HiOutlinePaperAirplane className="w-4 h-4" />
                     </button>
-                  </div>
-                </form>
-              ) : (
-                <>
-                  <label className="block text-[11px] uppercase tracking-wide text-slate-400 mb-2">
-                    Upload file — image, video, or audio
-                  </label>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*,video/*,audio/*"
-                    className="hidden"
-                    onChange={(e) => goAnalyzeFile(e.target.files?.[0] ?? null)}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full border-2 border-dashed border-slate-600 hover:border-[#00B5E2] hover:bg-slate-800/40 rounded-lg py-10 px-6 text-center transition"
-                  >
-                    <HiOutlineArrowUpTray className="w-8 h-8 text-slate-400 mx-auto mb-3" />
-                    <div className="text-sm text-white font-medium">
-                      Drop a file or click to browse
-                    </div>
-                    <div className="text-xs text-slate-400 mt-1">
-                      Images · video · audio · up to 200 MB
-                    </div>
-                    <div className="mt-4 inline-flex gap-3 text-slate-400">
-                      <span className="inline-flex items-center gap-1 text-[11px]">
-                        <HiOutlinePhoto className="w-3.5 h-3.5" /> Image
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-[11px]">
-                        <HiOutlineFilm className="w-3.5 h-3.5" /> Video
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-[11px]">
-                        <HiOutlineMusicalNote className="w-3.5 h-3.5" /> Audio
-                      </span>
-                    </div>
-                  </button>
-                </>
-              )}
+                  </form>
+                ) : (
+                  <>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*,video/*,audio/*"
+                      className="hidden"
+                      onChange={(e) => goAnalyzeFile(e.target.files?.[0] ?? null)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full border-2 border-dashed border-slate-400 hover:border-[#00B5E2] hover:bg-white/40 rounded-lg py-9 px-6 text-center transition"
+                    >
+                      <HiOutlineArrowUpTray className="w-8 h-8 text-slate-500 mx-auto mb-3" />
+                      <div className="text-sm text-[#041E42] font-semibold">
+                        Drop a file or click to browse
+                      </div>
+                      <div className="text-xs text-slate-600 mt-1">
+                        Images · video · audio · up to 200 MB
+                      </div>
+                      <div className="mt-4 inline-flex gap-3 text-slate-600">
+                        <span className="inline-flex items-center gap-1 text-[11px]">
+                          <HiOutlinePhoto className="w-3.5 h-3.5" /> Image
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-[11px]">
+                          <HiOutlineFilm className="w-3.5 h-3.5" /> Video
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-[11px]">
+                          <HiOutlineMusicalNote className="w-3.5 h-3.5" /> Audio
+                        </span>
+                      </div>
+                    </button>
+                  </>
+                )}
+
+                {/* Sub-tab pills — below the entry field, per the live site */}
+                <div className="inline-flex rounded-lg bg-[#041E42] p-1 mt-4">
+                  {(["url", "upload"] as const).map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setAiSubTab(t)}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition ${
+                        aiSubTab === t
+                          ? "bg-slate-600 text-white"
+                          : "text-slate-300 hover:text-white"
+                      }`}
+                    >
+                      {t === "url" ? "Social Media URL" : "Upload"}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               {/* Supported sources */}
               <div className="mt-6">
@@ -227,32 +233,32 @@ export function VerifyMediaPage() {
           )}
 
           {mainTab === "false" && (
-            <>
-              <div className="inline-flex rounded-md bg-slate-900/60 dark:bg-slate-800 p-1 mb-4">
-                <span className="px-3.5 py-1.5 rounded text-xs font-medium bg-[#00B5E2] text-[#041E42]">
-                  Enter Text
-                </span>
-              </div>
-              <label className="block text-[11px] uppercase tracking-wide text-slate-400 mb-2">
+            <div className="bg-slate-200 dark:bg-slate-300 rounded-lg p-5 md:p-6">
+              <div className="text-lg font-bold text-[#041E42] mb-3">
                 Enter text to check
-              </label>
+              </div>
               <textarea
                 value={claimText}
                 onChange={(e) => setClaimText(e.target.value)}
                 rows={5}
                 placeholder="Paste or type a claim, headline, or quote to fact-check…"
-                className="w-full bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 text-sm rounded-md px-3 py-2.5 focus:outline-none focus:border-[#00B5E2] focus:ring-1 focus:ring-[#00B5E2]"
+                className="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-400 text-base rounded-lg px-4 py-3 focus:outline-none focus:border-[#00B5E2] focus:ring-1 focus:ring-[#00B5E2]"
               />
-              <div className="flex justify-end mt-3">
+              <div className="flex items-center justify-between mt-4">
+                <div className="inline-flex rounded-lg bg-[#041E42] p-1">
+                  <span className="px-4 py-2 rounded-md text-sm font-medium bg-slate-600 text-white">
+                    Enter Text
+                  </span>
+                </div>
                 <button
                   onClick={goAnalyzeText}
-                  className="bg-[#00B5E2] hover:bg-[#0099C2] text-[#041E42] font-semibold text-sm px-5 py-2 rounded-md flex items-center gap-2 transition"
+                  className="bg-[#00B5E2] hover:bg-[#0099C2] text-[#041E42] font-semibold text-base px-6 py-2.5 rounded-lg flex items-center gap-2 transition"
                 >
                   Analyze
                   <HiOutlinePaperAirplane className="w-4 h-4" />
                 </button>
               </div>
-            </>
+            </div>
           )}
         </section>
 
@@ -389,9 +395,10 @@ function HistoryMediaPreview() {
         <div className="col-span-1 text-right">First Queried</div>
       </div>
 
-      {recent.map((r) => {
+      {recent.map((r, idx) => {
         const Icon = MEDIA_ICON[r.type];
         const border = VERDICT_BORDER[r.verdict] ?? "border-slate-600";
+        const isAudio = r.type === "audio";
         return (
           <a
             key={r.id}
@@ -400,8 +407,13 @@ function HistoryMediaPreview() {
           >
             {/* Thumbnail with verdict-colored border */}
             <div className="col-span-3">
-              <div className={`relative aspect-video rounded-md border-2 ${border} bg-slate-800 overflow-hidden flex items-center justify-center`}>
-                <Icon className="w-8 h-8 text-slate-600" />
+              <div className={`relative aspect-video rounded-md border-2 ${border} overflow-hidden ${isAudio ? "bg-white" : "bg-slate-800"}`}>
+                <img
+                  src={sampleThumbnail(r.type, idx)}
+                  alt=""
+                  className={`w-full h-full object-center ${isAudio ? "object-contain p-2" : "object-cover"}`}
+                  loading="lazy"
+                />
               </div>
             </div>
 
@@ -512,6 +524,7 @@ function NotableCard({ c }: { c: RealCase }) {
   const truth = TRUTH_PILL[c.groundTruth];
   const sourceHost = hostnameOf(c.citationUrl);
   const thumb = caseThumbnail(c);
+  const waveform = isWaveform(c);
 
   return (
     <article className="w-full rounded-2xl border border-slate-300 dark:border-slate-700 bg-[#E2E2E2] dark:bg-slate-800 p-4 shadow-sm hover:shadow-md transition">
@@ -523,12 +536,12 @@ function NotableCard({ c }: { c: RealCase }) {
         <TypeIcon className="w-5 h-5 text-slate-500 dark:text-slate-400 shrink-0" />
       </div>
 
-      {/* Real thumbnail frame (image/video) or generated mel spectrogram (audio) */}
-      <div className="relative mt-3 aspect-video rounded-xl overflow-hidden bg-slate-800">
+      {/* Real thumbnail frame (image/video) or audio waveform */}
+      <div className={`relative mt-3 aspect-video rounded-xl overflow-hidden ${waveform ? "bg-white" : "bg-slate-800"}`}>
         <img
           src={thumb}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          className={`absolute inset-0 w-full h-full object-center ${waveform ? "object-contain p-3" : "object-cover"}`}
           loading="lazy"
         />
         <div

@@ -87,28 +87,28 @@ export default function LabPage() {
             </div>
           </header>
 
-          {/* 00 — Text-claim fact-check ensemble (two design proposals) */}
+          {/* 00 — Text-claim fact-check ensemble */}
           <section className="rounded-lg border border-[#00B5E2]/30 bg-[#00B5E2]/5 dark:bg-[#00B5E2]/10 p-5 md:p-6">
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div className="max-w-2xl">
                 <div className="text-[11px] uppercase tracking-[0.08em] text-[#0883a3] dark:text-[#33D6FF] font-semibold mb-1">
-                  New · Proposal
+                  Text detection
                 </div>
                 <h2 className="text-xl font-bold mb-1">
                   Text-claim fact-check ensemble
                 </h2>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Two designs for showing more than one model output on the text
-                  detection page — a near-duplicate of today&rsquo;s claim result,
-                  extended so the verdict is the aggregate of several fact-check
-                  models. Toggle between both versions at the top of the page.
+                  The text detection page — a near-duplicate of today&rsquo;s claim
+                  result, extended so the verdict is the aggregate of several
+                  fact-check models, with evidence grouped into refutes / context /
+                  supports lanes.
                 </p>
               </div>
               <a
-                href="/lab/veracity?fresh=1"
+                href="/claim/veracity?fresh=1"
                 className="bg-[#041E42] text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-[#082854] transition shrink-0"
               >
-                Open A / B designs →
+                Open text detection →
               </a>
             </div>
           </section>

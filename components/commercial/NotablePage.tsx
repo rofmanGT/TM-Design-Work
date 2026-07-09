@@ -11,7 +11,7 @@ import {
   HiOutlineDocumentText,
   HiOutlineCheck,
 } from "react-icons/hi2";
-import { REAL_CASES, caseThumbnail, isSpectrogram, type RealCase } from "@/components/real/realData";
+import { REAL_CASES, caseThumbnail, isWaveform, type RealCase } from "@/components/real/realData";
 
 // ─────────────────────────────────────────────────────────────────────
 // The Notable Cases Archive — now backed by the REAL curated cases from
@@ -216,26 +216,26 @@ function CaseCard({ c, index }: { c: RealCase; index: number }) {
   const sourceHost = hostnameOf(c.citationUrl);
   const caseId = caseIdFor(index);
   const thumb = caseThumbnail(c);
-  const spectrogram = isSpectrogram(c);
+  const waveform = isWaveform(c);
 
   return (
     <article className="group flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 transition rounded-sm overflow-hidden">
       {/* Cover plate — real thumbnail frame (image/video) or generated mel
           spectrogram (audio), framed at video ratio and centered. */}
-      <div className={`relative aspect-video ${treatment}`}>
+      <div className={`relative aspect-video ${waveform ? "bg-white" : treatment}`}>
         <img
           src={thumb}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          className={`absolute inset-0 w-full h-full object-center ${waveform ? "object-contain p-3" : "object-cover"}`}
           loading="lazy"
         />
         {/* Media-type glyph, bottom-right, always visible */}
         <div className="absolute bottom-2 right-2 bg-black/50 text-white rounded-sm p-1">
           <TypeIcon className="w-3.5 h-3.5" />
         </div>
-        {spectrogram && (
+        {waveform && (
           <div className="absolute bottom-2 left-2 bg-black/50 text-white text-[9px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded-sm">
-            Mel spectrogram
+            Audio waveform
           </div>
         )}
         <div className="absolute top-2 left-2 bg-white/95 dark:bg-slate-100 text-slate-900 text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded-sm">
@@ -323,7 +323,7 @@ function CiteButton({ c, caseId }: { c: RealCase; caseId: string }) {
   const [copied, setCopied] = useState(false);
 
   function copyCitation() {
-    const citation = `TrueMedia (Georgetown Media Integrity Initiative). "${c.title}." Notable Cases Archive, ${caseId}.${
+    const citation = `TrueMedia (Georgetown Media Integrity Lab). "${c.title}." Notable Cases Archive, ${caseId}.${
       c.citationUrl ? ` Documented at ${c.citationUrl}.` : ""
     } https://www.truemedia.org/media/notable`;
     navigator.clipboard?.writeText(citation).then(() => {

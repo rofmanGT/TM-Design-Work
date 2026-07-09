@@ -1,4 +1,3 @@
-import { ConfidenceBar } from "./ConfidenceBar";
 import { VerdictBadge } from "./VerdictBadge";
 import {
   VERDICT_STYLES,
@@ -17,10 +16,8 @@ export type CategoryRow = {
 
 type Props = {
   detectors: DetectorResult[];
-  /** Per-detector breakdown list under the gauge. Default true. */
+  /** Individual detector list between the verdict sentence and the gauge. Default true. */
   showBreakdown?: boolean;
-  /** Optional category-level summary table rendered below the votes bar. */
-  categoryRows?: CategoryRow[];
   /** When set, replaces the verdict sentence with TrueMedia's "Waiting for…" copy. */
   loadingPhase?: "download" | "analyses" | null;
 };
@@ -60,7 +57,7 @@ function GaugeSvg({ value }: { value: number }) {
   return (
     <svg
       viewBox="0 0 200 120"
-      className="w-full max-w-[240px] mx-auto block"
+      className="w-full max-w-[140px] mx-auto block"
       role="img"
       aria-label={`Manipulation probability gauge at ${value}%`}
     >
@@ -192,7 +189,7 @@ function ConfidenceLadder({
     LADDER_BANDS.find((b) => value < b.to) ?? LADDER_BANDS[LADDER_BANDS.length - 1];
 
   return (
-    <div className="mt-4">
+    <div>
       <div className="flex items-baseline justify-between mb-1.5">
         <span className="text-[10px] uppercase tracking-wider text-slate-400">
           Verbal confidence
@@ -242,10 +239,9 @@ function ConfidenceLadder({
 export function EnsembleGauge({
   detectors,
   showBreakdown = true,
-  categoryRows,
   loadingPhase = null,
 }: Props) {
-  const { confidence, verdict, agreeingCount, activeCount } = ensembleConfidence(detectors);
+  const { confidence, verdict, activeCount } = ensembleConfidence(detectors);
   const totalCount = detectors.length;
   const s = VERDICT_STYLES[verdict];
   const isLoading = loadingPhase !== null;
@@ -296,90 +292,49 @@ export function EnsembleGauge({
           )}
         </div>
 
-        <GaugeSvg value={confidence} />
-
-        <div className="flex flex-col items-center mt-1">
-          <div className={`text-4xl font-semibold tracking-tight ${s.pillText} leading-none`}>
-            {confidence}%
-          </div>
-          <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400 mt-1.5">
-            Manipulation probability
-          </div>
-        </div>
-
-        {/* Calibrated verbal scale + detector-spread band (hidden while loading) */}
-        {!isLoading && (
-          <ConfidenceLadder value={confidence} detectors={detectors} accent={s.pillText} />
-        )}
-
-        {/* Votes bar with inline agreement count */}
-        <div className="mt-4 flex items-center gap-2">
-          <span className="text-[10px] uppercase tracking-wider text-slate-400 shrink-0">
-            Votes
-          </span>
-          <div className="flex-1 flex gap-1">
-            {detectors.map((d, i) => {
-              const dv = d.verdict ?? verdictFromConfidence(d.confidence);
-              return (
-                <span
-                  key={i}
-                  className={`flex-1 h-1.5 rounded-full ${VERDICT_STYLES[dv].bar}`}
-                  title={`${d.name} — ${VERDICT_STYLES[dv].label}`}
-                />
-              );
-            })}
-          </div>
-          <span className="text-[11px] text-slate-300 whitespace-nowrap font-mono shrink-0">
-            {agreeingCount}/{activeCount} agree
-          </span>
-        </div>
-
-        {/* Category-level summary table — fixed column template shared by the
-            header and every row, so counts and pills align down the page. */}
-        {categoryRows && categoryRows.length > 0 && (
-          <div className="mt-4 border border-slate-700 rounded-md overflow-hidden">
-            <div className="grid grid-cols-[1fr_3.5rem_8.75rem] gap-2 px-3 py-1.5 bg-slate-800/60 text-[10px] uppercase tracking-wider text-slate-400">
-              <span>Analysis</span>
-              <span className="text-center">Detectors</span>
-              <span className="text-right">Results</span>
-            </div>
-            {categoryRows.map((row) => (
-              <div
-                key={row.id}
-                className="grid grid-cols-[1fr_3.5rem_8.75rem] gap-2 px-3 py-1.5 border-t border-slate-700 items-center"
-              >
-                <span className="text-sm truncate">{row.name}</span>
-                <span className="text-sm text-center font-mono tabular-nums">
-                  {row.detectorCount}
-                </span>
-                <span className="flex justify-end">
-                  <VerdictBadge verdict={row.verdict} size="sm" />
-                </span>
+        {/* Combined score — compact gauge with the verbal scale beside it,
+            sitting directly under the verdict line */}
+        <div className="border-t border-slate-700 pt-4 flex items-center gap-5">
+          <div className="shrink-0 w-[120px]">
+            <GaugeSvg value={confidence} />
+            <div className="flex flex-col items-center mt-0.5">
+              <div className={`text-xl font-semibold tracking-tight ${s.pillText} leading-none`}>
+                {confidence}%
               </div>
-            ))}
-          </div>
-        )}
-
-        {showBreakdown && (
-          <div className="mt-5 border-t border-slate-700 pt-4">
-            <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-3">
-              Per-detector breakdown
+              <div className="text-[9px] uppercase tracking-[0.1em] text-slate-400 mt-1 text-center leading-tight">
+                Manipulation probability
+              </div>
             </div>
-            <ul className="space-y-3">
-              {detectors.map((d) => {
+          </div>
+
+          {/* Calibrated verbal scale + detector-spread band (hidden while loading) */}
+          {!isLoading && (
+            <div className="flex-1 min-w-0">
+              <ConfidenceLadder value={confidence} detectors={detectors} accent={s.pillText} />
+            </div>
+          )}
+        </div>
+
+        {/* Detectors — condensed single-line rows under the gauge. The
+            per-detector percentage is intentionally hidden; only the overall
+            manipulation probability (above) carries a number. */}
+        {showBreakdown && (
+          <div className="mt-5 border-t border-slate-700 pt-3">
+            <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1">
+              Detectors
+            </div>
+            <ul className="divide-y divide-slate-800">
+              {detectors.map((d, i) => {
                 const dv = d.verdict ?? verdictFromConfidence(d.confidence);
                 return (
-                  <li key={d.name}>
-                    <div className="flex items-center justify-between gap-3 mb-1.5">
-                      <span className="text-sm truncate">{d.name}</span>
-                      <div className="flex items-center gap-3 shrink-0">
-                        <VerdictBadge verdict={dv} size="sm" />
-                        <span className="font-mono text-slate-200 text-sm w-10 text-right">
-                          {dv === "pending" ? "—" : `${d.confidence}%`}
-                        </span>
-                      </div>
-                    </div>
-                    <ConfidenceBar value={d.confidence} height={3} background="bg-slate-700" />
+                  <li
+                    key={`${i}-${d.name}`}
+                    className="flex items-center justify-between gap-3 py-1.5"
+                  >
+                    <span className="text-[13px] text-slate-200 truncate">{d.name}</span>
+                    <span className="shrink-0">
+                      <VerdictBadge verdict={dv} size="sm" />
+                    </span>
                   </li>
                 );
               })}

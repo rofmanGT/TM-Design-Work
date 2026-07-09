@@ -122,6 +122,9 @@ export type EnsembleEvidence = {
   passage: string;
   /** Surrounding context, quoted verbatim, shown on expand. */
   context: string;
+  /** Whether a human analyst has reviewed this evidence item. Mirrors the
+      `reviewed` flag on the production ClaimEvidence type. */
+  reviewed?: boolean;
 };
 
 export const ENSEMBLE_EVIDENCE: EnsembleEvidence[] = [
@@ -130,6 +133,7 @@ export const ENSEMBLE_EVIDENCE: EnsembleEvidence[] = [
     title: "Recent Hurricanes and Geoengineering",
     source: "RAND",
     author: "Emmi Yonekura",
+    reviewed: true,
     url: "rand.org/pubs/commentary/2024/10/recent-hurricanes-and-geoengineering.html",
     href: "https://www.rand.org/pubs/commentary/2024/10/recent-hurricanes-and-geoengineering.html",
     relevance: 0.94,
@@ -148,6 +152,7 @@ export const ENSEMBLE_EVIDENCE: EnsembleEvidence[] = [
     href: "https://www.noaa.gov/news/fact-check-debunking-weather-modification-claims",
     relevance: 0.93,
     stance: "refutes",
+    reviewed: true,
     citedBy: ["retrieval", "stance", "matching"],
     passage:
       "No technology exists that can create, destroy, modify, strengthen or steer hurricanes in any way, shape or form.",
@@ -199,8 +204,29 @@ export const ENSEMBLE_EVIDENCE: EnsembleEvidence[] = [
   },
 ];
 
-/** Real product text — the system's one-line conclusion for this claim. */
-export const RESULTS_SUMMARY = "Available evidence contradicts this claim.";
+// Per-verdict verbal labels and one-line "Results Summary" conclusions,
+// taken verbatim from the production repo (data/claimVerdict.ts `verdicts`).
+// Our four claim verdicts map onto the real four:
+//   likely-true ← low/trusted · likely-false ← high
+//   mixed ← uncertain · unresolved ← unknown
+import type { ClaimVerdict as _CV } from "@/components/commercial/sampleData";
+
+export const VERDICT_LABEL: Record<_CV, string> = {
+  "likely-true": "Likely true",
+  "likely-false": "Likely false",
+  mixed: "Mixed or unclear evidence",
+  unresolved: "Not enough evidence to verify",
+};
+
+export const RESULTS_SUMMARY_BY_VERDICT: Record<_CV, string> = {
+  "likely-true": "Available evidence supports this claim.",
+  "likely-false": "Available evidence contradicts this claim.",
+  mixed: "Sources give mixed signals or lack the detail needed to verify.",
+  unresolved: "We couldn't find reliable evidence to confirm or debunk this claim.",
+};
+
+/** Convenience for the current demo claim (Hurricane Helene → likely false). */
+export const RESULTS_SUMMARY = RESULTS_SUMMARY_BY_VERDICT["likely-false"];
 
 export const CLAIM_DISCLAIMER =
   "Disclaimer: This tool uses AI-powered analysis and external sources. However, errors can occur.";
