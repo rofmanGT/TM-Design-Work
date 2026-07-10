@@ -41,7 +41,7 @@ export function EnsembleVerdict({ detectors, showBreakdown = true }: Props) {
       {/* Headline: N of M is the trust signal */}
       <div className="flex items-end gap-4 mb-3">
         <div className="leading-none">
-          <span className={`text-6xl font-semibold tracking-tight ${s.pillText}`}>
+          <span className={`text-6xl font-semibold tracking-tight ${s.onDark}`}>
             {agreeingCount}
           </span>
           <span className="text-3xl text-slate-400 font-normal">/{activeCount}</span>

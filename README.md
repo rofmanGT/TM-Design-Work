@@ -2,7 +2,7 @@
 
 A design and front-end prototype for **TrueMedia**, an open-source deepfake
 detection platform developed as a research project of **Georgetown
-University's Media Integrity Initiative**.
+University**.
 
 This repository is a **UI mockup**: it reproduces the full product flow with
 simulated data so the team can evaluate layout, interaction, and tone before
@@ -67,7 +67,7 @@ If you reference this tool in academic or journalistic work:
 ```bibtex
 @misc{truemedia2026,
   title        = {TrueMedia: Open-Source Deepfake Detection},
-  author       = {{Georgetown University Media Integrity Initiative}},
+  author       = {{Georgetown University}},
   year         = {2026},
   howpublished = {\url{https://www.truemedia.org}}
 }

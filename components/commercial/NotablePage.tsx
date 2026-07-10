@@ -5,13 +5,18 @@ import {
   HiOutlinePhoto,
   HiOutlineFilm,
   HiOutlineMusicalNote,
-  HiOutlineArrowTopRightOnSquare,
   HiOutlineArrowRight,
   HiOutlineBookOpen,
   HiOutlineDocumentText,
   HiOutlineCheck,
 } from "react-icons/hi2";
-import { REAL_CASES, caseThumbnail, isWaveform, type RealCase } from "@/components/real/realData";
+import {
+  REAL_CASES,
+  caseThumbnail,
+  isWaveform,
+  type RealCase,
+  type CaseTopic,
+} from "@/components/real/realData";
 
 // ─────────────────────────────────────────────────────────────────────
 // The Notable Cases Archive — now backed by the REAL curated cases from
@@ -22,6 +27,7 @@ import { REAL_CASES, caseThumbnail, isWaveform, type RealCase } from "@/componen
 
 type MediaFilter = "all" | "image" | "video" | "audio";
 type LabelFilter = "all" | "fake" | "authentic" | "unlabeled";
+type TopicFilter = "all" | CaseTopic;
 
 const MEDIA_OPTS: { v: MediaFilter; label: string }[] = [
   { v: "all", label: "All media" },
@@ -37,6 +43,14 @@ const LABEL_OPTS: { v: LabelFilter; label: string }[] = [
   { v: "unlabeled", label: "Unlabeled" },
 ];
 
+const TOPIC_OPTS: { v: TopicFilter; label: string }[] = [
+  { v: "all", label: "All topics" },
+  { v: "Politics", label: "Politics" },
+  { v: "Celebrity", label: "Celebrity" },
+  { v: "Cybersecurity", label: "Cybersecurity" },
+  { v: "Technology", label: "Technology" },
+];
+
 const MEDIA_ICON = {
   image: HiOutlinePhoto,
   video: HiOutlineFilm,
@@ -49,19 +63,20 @@ const TRUTH_CHIP: Record<
   RealCase["groundTruth"],
   { label: string; classes: string }
 > = {
-  fake: { label: "Documented fake", classes: "bg-[#771D1D] text-[#F8B4B5]" },
-  authentic: { label: "Authentic", classes: "bg-[#014737] text-[#84E1BD]" },
-  unlabeled: { label: "Unlabeled", classes: "bg-[#374051] text-white" },
+  fake: { label: "Documented fake", classes: "bg-[#862633] text-[#F6C6D0]" },
+  authentic: { label: "Authentic", classes: "bg-[#3F6B07] text-[#C2DBA4]" },
+  unlabeled: { label: "Unlabeled", classes: "bg-[#63666A] text-white" },
 };
 
 // Reserved, muted cover treatments — cycled by index; index-card feel.
+// On-palette: Georgetown Blue (navy) shades + Georgetown Gray tones.
 const CASE_TREATMENTS = [
-  "bg-stone-800",
-  "bg-zinc-800",
-  "bg-neutral-800",
-  "bg-slate-800",
-  "bg-gray-800",
-  "bg-stone-900",
+  "bg-[#041E42]", // Georgetown Blue
+  "bg-[#0A2348]", // Georgetown Blue, lifted
+  "bg-[#63666A]", // Georgetown Gray (base)
+  "bg-[#031630]", // Georgetown Blue, deep
+  "bg-[#7F8185]", // Georgetown Gray 80%
+  "bg-[#717277]", // Georgetown Gray 90%
 ];
 
 // Curatorial pick for the featured holding: the New Hampshire robocall —
@@ -86,15 +101,17 @@ function hostnameOf(url?: string) {
 export function NotablePage() {
   const [mediaFilter, setMediaFilter] = useState<MediaFilter>("all");
   const [labelFilter, setLabelFilter] = useState<LabelFilter>("all");
+  const [topicFilter, setTopicFilter] = useState<TopicFilter>("all");
 
   const filtered = useMemo(
     () =>
       REAL_CASES.map((c, i) => ({ c, index: i })).filter(({ c }) => {
         if (mediaFilter !== "all" && c.mediaType !== mediaFilter) return false;
         if (labelFilter !== "all" && c.groundTruth !== labelFilter) return false;
+        if (topicFilter !== "all" && c.topic !== topicFilter) return false;
         return true;
       }),
-    [mediaFilter, labelFilter]
+    [mediaFilter, labelFilter, topicFilter]
   );
 
   return (
@@ -106,12 +123,11 @@ export function NotablePage() {
           The Notable Cases Archive
         </div>
         <h1 className="font-serif text-4xl font-bold mb-3 tracking-tight text-balance">
-          Catalogued holdings
+          Notable Cases
         </h1>
         <dl className="mt-5 flex flex-wrap gap-x-8 gap-y-2 text-[11px] uppercase tracking-wide">
-          <Stat label="Holdings" value={String(REAL_CASES.length)} />
+          <Stat label="Cases" value={String(REAL_CASES.length)} />
           <Stat label="Curated by" value="TrueMedia team" />
-          <Stat label="Provenance" value="Political deepfake quiz" />
           <Stat label="Citation format" value="TM-NC-### / Title, Source" />
         </dl>
       </header>
@@ -123,6 +139,7 @@ export function NotablePage() {
         </div>
         <div className="flex flex-col gap-2.5">
           <FilterRow label="Media" opts={MEDIA_OPTS} value={mediaFilter} onChange={setMediaFilter} />
+          <FilterRow label="Topic" opts={TOPIC_OPTS} value={topicFilter} onChange={setTopicFilter} />
           <FilterRow label="Label" opts={LABEL_OPTS} value={labelFilter} onChange={setLabelFilter} />
         </div>
       </section>
@@ -130,7 +147,7 @@ export function NotablePage() {
       {/* Holdings count */}
       <div className="flex items-baseline justify-between mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
         <div className="text-[11px] uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400 font-semibold">
-          Holdings · {filtered.length} {filtered.length === 1 ? "entry" : "entries"}
+          Cases · {filtered.length} {filtered.length === 1 ? "entry" : "entries"}
         </div>
         <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
           Ground truth shown only where the cited source states it
@@ -139,7 +156,7 @@ export function NotablePage() {
 
       {filtered.length === 0 ? (
         <div className="text-center text-sm text-slate-500 dark:text-slate-400 py-20 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg">
-          No holdings match the current filters.
+          No cases match the current filters.
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -230,11 +247,11 @@ function CaseCard({ c, index }: { c: RealCase; index: number }) {
           loading="lazy"
         />
         {/* Media-type glyph, bottom-right, always visible */}
-        <div className="absolute bottom-2 right-2 bg-black/50 text-white rounded-sm p-1">
+        <div className="absolute bottom-2 right-2 bg-[#041E42]/60 text-white rounded-sm p-1">
           <TypeIcon className="w-3.5 h-3.5" />
         </div>
         {waveform && (
-          <div className="absolute bottom-2 left-2 bg-black/50 text-white text-[9px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded-sm">
+          <div className="absolute bottom-2 left-2 bg-[#041E42]/60 text-white text-[9px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded-sm">
             Audio waveform
           </div>
         )}
@@ -279,35 +296,28 @@ function CaseCard({ c, index }: { c: RealCase; index: number }) {
           <dd className="text-[#041E42] dark:text-slate-200 capitalize">{c.mediaType}</dd>
 
           <dt className="uppercase tracking-wider text-slate-500 dark:text-slate-500">
-            Documented by
+            Topic
+          </dt>
+          <dd className="text-[#041E42] dark:text-slate-200">{c.topic}</dd>
+
+          <dt className="uppercase tracking-wider text-slate-500 dark:text-slate-500">
+            Source
           </dt>
           <dd className="text-[#041E42] dark:text-slate-200 font-mono">
             {sourceHost ?? "—"}
           </dd>
         </dl>
 
-        {/* Footer: cite + documentation link */}
+        {/* Footer: cite + link to the TrueMedia verdict page */}
         <div className="border-t border-slate-200 dark:border-slate-800 pt-3 mt-auto flex items-center justify-between gap-2">
           <CiteButton c={c} caseId={caseId} />
-          {c.citationUrl ? (
-            <a
-              href={c.citationUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-[#00B5E2] hover:text-[#0883a3] dark:hover:text-[#33D6FF] inline-flex items-center gap-1 font-medium"
-            >
-              View documentation
-              <HiOutlineArrowTopRightOnSquare className="w-3 h-3" />
-            </a>
-          ) : (
-            <a
-              href="/media/analysis"
-              className="text-xs text-[#00B5E2] hover:text-[#0883a3] dark:hover:text-[#33D6FF] inline-flex items-center gap-1 font-medium"
-            >
-              View record
-              <HiOutlineArrowRight className="w-3 h-3" />
-            </a>
-          )}
+          <a
+            href="/media/analysis"
+            className="text-xs text-[#00B5E2] hover:text-[#003DA5] dark:hover:text-[#5FC9EB] inline-flex items-center gap-1 font-medium"
+          >
+            TrueMedia verdict
+            <HiOutlineArrowRight className="w-3 h-3" />
+          </a>
         </div>
       </div>
     </article>
@@ -323,7 +333,7 @@ function CiteButton({ c, caseId }: { c: RealCase; caseId: string }) {
   const [copied, setCopied] = useState(false);
 
   function copyCitation() {
-    const citation = `TrueMedia (Georgetown Media Integrity Lab). "${c.title}." Notable Cases Archive, ${caseId}.${
+    const citation = `TrueMedia (Georgetown University). "${c.title}." Notable Cases Archive, ${caseId}.${
       c.citationUrl ? ` Documented at ${c.citationUrl}.` : ""
     } https://www.truemedia.org/media/notable`;
     navigator.clipboard?.writeText(citation).then(() => {

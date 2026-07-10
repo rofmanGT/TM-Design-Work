@@ -91,7 +91,7 @@ export default function LabPage() {
           <section className="rounded-lg border border-[#00B5E2]/30 bg-[#00B5E2]/5 dark:bg-[#00B5E2]/10 p-5 md:p-6">
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div className="max-w-2xl">
-                <div className="text-[11px] uppercase tracking-[0.08em] text-[#0883a3] dark:text-[#33D6FF] font-semibold mb-1">
+                <div className="text-[11px] uppercase tracking-[0.08em] text-[#003DA5] dark:text-[#5FC9EB] font-semibold mb-1">
                   Text detection
                 </div>
                 <h2 className="text-xl font-bold mb-1">

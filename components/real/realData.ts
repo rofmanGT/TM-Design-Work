@@ -7,8 +7,10 @@
 // ─────────────────────────────────────────────────────────────────────
 
 // ── Verdict taxonomy ─────────────────────────────────────────────────
-// Source: apps/detect/app/data/verdict.ts + data/model.ts (ranks)
-// Badge colors are the exact hex values the real product renders.
+// Source: apps/detect/app/data/verdict.ts + data/model.ts (ranks).
+// Verdict COPY is verbatim from the real product; badge COLORS are mapped
+// onto the Georgetown tertiary palette (Green 369 / Yellow 1205 / Red
+// 202 / Georgetown Gray) so every rendered badge stays on-brand.
 
 export type RealVerdictId = "low" | "uncertain" | "high" | "unknown" | "trusted";
 
@@ -20,28 +22,28 @@ export const REAL_VERDICTS: Record<
     longSummary: "Little Evidence of Manipulation",
     adjective: "little",
     shortSummary: "Little Evidence",
-    badgeBackground: "#014737",
-    badgeText: "#84E1BD",
+    badgeBackground: "#64A70B", // GU Green 369
+    badgeText: "#041E42",
   },
   uncertain: {
     longSummary: "Uncertain: Could Be Authentic or Manipulated",
     adjective: "some",
     shortSummary: "Uncertain",
-    badgeBackground: "#623112",
-    badgeText: "#FBCA16",
+    badgeBackground: "#F8E08E", // GU Yellow 1205
+    badgeText: "#041E42",
   },
   high: {
     longSummary: "Substantial Evidence of Manipulation",
     adjective: "substantial",
     shortSummary: "Substantial Evidence",
-    badgeBackground: "#771D1D",
-    badgeText: "#F8B4B5",
+    badgeBackground: "#862633", // GU Red 202
+    badgeText: "#FFFFFF",
   },
   unknown: {
     longSummary: "Unknown",
     adjective: "unknown",
     shortSummary: "Unknown",
-    badgeBackground: "#374051",
+    badgeBackground: "#63666A", // Georgetown Gray
     badgeText: "#FFFFFF",
   },
   trusted: {
@@ -49,8 +51,8 @@ export const REAL_VERDICTS: Record<
     longSummary: "Little Evidence of Manipulation",
     adjective: "little",
     shortSummary: "Little Evidence",
-    badgeBackground: "#014737",
-    badgeText: "#84E1BD",
+    badgeBackground: "#64A70B", // GU Green 369
+    badgeText: "#041E42",
   },
 };
 
@@ -120,6 +122,18 @@ export const REAL_DETECTORS: RealDetector[] = [
   },
   {
     key: "wav2vec2",
+    name: "Audio Analysis",
+    descrip: "Analyzes audio for evidence that it was created by an AI generator or cloning.",
+    category: "audio",
+    mediaType: "audio",
+    policy: "include",
+    availability: "enabled",
+    source: "truemedia (in-house)",
+  },
+  {
+    // Second enabled audio model — same user-facing "Audio Analysis" name in
+    // the real registry; disambiguated in the UI by its backbone.
+    key: "wav2vec2trill",
     name: "Audio Analysis",
     descrip: "Analyzes audio for evidence that it was created by an AI generator or cloning.",
     category: "audio",
@@ -263,6 +277,8 @@ export const REAL_GENERATORS = [
 // the cited source itself states it; otherwise "unlabeled" (the quiz
 // answer key is not in the repo).
 
+export type CaseTopic = "Politics" | "Celebrity" | "Cybersecurity" | "Technology";
+
 export type RealCase = {
   id: string;
   title: string;
@@ -270,6 +286,7 @@ export type RealCase = {
   mediaType: "image" | "video" | "audio";
   citationUrl?: string;
   groundTruth: "fake" | "authentic" | "unlabeled";
+  topic: CaseTopic;
 };
 
 export const REAL_CASES: RealCase[] = [
@@ -280,6 +297,7 @@ export const REAL_CASES: RealCase[] = [
     mediaType: "image",
     citationUrl: "https://restofworld.org/2024/elections-ai-tracker/#/manipulated-mexico-flag",
     groundTruth: "fake",
+    topic: "Politics",
   },
   {
     id: "lWhG0sWV537fcJL_orhbq41Y-OM.jpg",
@@ -288,6 +306,7 @@ export const REAL_CASES: RealCase[] = [
     mediaType: "image",
     citationUrl: "https://x.com/POTUS/status/1793390126086619204",
     groundTruth: "authentic",
+    topic: "Politics",
   },
   {
     id: "R6VB3R9Lg13QIQqgpomXeIIEigU.jpg",
@@ -297,6 +316,7 @@ export const REAL_CASES: RealCase[] = [
     citationUrl:
       "https://www.politico.eu/article/spot-deepfake-artificial-intelligence-tools-undermine-eyes-ears/",
     groundTruth: "fake",
+    topic: "Technology",
   },
   {
     id: "M9WWnSoqjxceRPNK9M6b-u9HT00.mp4",
@@ -304,6 +324,7 @@ export const REAL_CASES: RealCase[] = [
     description: "Donald Trump speaking at the courthouse ahead of his conviction",
     mediaType: "video",
     groundTruth: "unlabeled",
+    topic: "Politics",
   },
   {
     id: "XhKj2vIaqkMg8hn91JqTCiFN6VA.mp4",
@@ -313,6 +334,7 @@ export const REAL_CASES: RealCase[] = [
     citationUrl:
       "https://www.cnn.com/videos/world/2022/04/10/boris-johnson-kyiv-ukraine-volodymyr-zelensky-ndwknd-vpx.cnn",
     groundTruth: "authentic",
+    topic: "Politics",
   },
   {
     id: "lCC0X6TanDIghg8OHSPLOt0Uafk.mp4",
@@ -320,6 +342,7 @@ export const REAL_CASES: RealCase[] = [
     description: "Russian President Putin discussing negotiations for peace with Ukraine",
     mediaType: "video",
     groundTruth: "unlabeled",
+    topic: "Politics",
   },
   {
     id: "amGVbtble0pMsgvHKETZ3ZPES4s.mp4",
@@ -328,6 +351,7 @@ export const REAL_CASES: RealCase[] = [
     mediaType: "video",
     citationUrl: "https://www.youtube.com/watch?v=QvlV8G-NxDk",
     groundTruth: "unlabeled",
+    topic: "Celebrity",
   },
   {
     id: "PWfMimqFyAVS3lMocRqWBQYpPC8.mp4",
@@ -336,6 +360,7 @@ export const REAL_CASES: RealCase[] = [
     mediaType: "video",
     citationUrl: "https://act.represent.us/sign/deepfake-release",
     groundTruth: "fake",
+    topic: "Politics",
   },
   {
     id: "6jESKtyja_DQQHSHIM9ir-FPrxg.wav",
@@ -345,6 +370,7 @@ export const REAL_CASES: RealCase[] = [
     citationUrl:
       "https://apnews.com/article/ai-robocall-biden-new-hampshire-primary-2024-f94aa2d7f835ccc3cc254a90cd481a99",
     groundTruth: "fake",
+    topic: "Cybersecurity",
   },
   {
     id: "WrSkrmuau5CI7mS_311lQu9ecPM.mp3",
@@ -355,6 +381,7 @@ export const REAL_CASES: RealCase[] = [
     citationUrl:
       "https://www.standard.co.uk/news/london/sadiq-khan-ai-misinformation-armistice-day-deepfake-b1139021.html",
     groundTruth: "fake",
+    topic: "Politics",
   },
 ];
 

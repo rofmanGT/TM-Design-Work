@@ -14,6 +14,7 @@ import {
   HiOutlineDocumentText,
   HiOutlineChevronLeft,
   HiOutlineChevronRight,
+  HiOutlineInformationCircle,
 } from "react-icons/hi2";
 import {
   FaRedditAlien,
@@ -64,7 +65,9 @@ export function VerifyMediaPage() {
   const router = useRouter();
   const [mainTab, setMainTab] = useState<MainTab>("ai");
   const [aiSubTab, setAiSubTab] = useState<AiSubTab>("url");
+  const [falseSubTab, setFalseSubTab] = useState<"url" | "text">("url");
   const [url, setUrl] = useState("");
+  const [claimUrl, setClaimUrl] = useState("");
   const [claimText, setClaimText] = useState("");
   const [notableOpen, setNotableOpen] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -108,8 +111,11 @@ export function VerifyMediaPage() {
           </p>
         </header>
 
+        {/* Tabbed analysis panel — a single bordered box so the inactive tab
+            reads clearly against the page */}
+        <div className="rounded-lg border border-slate-300 dark:border-slate-700 overflow-hidden shadow-sm">
         {/* Main tabs */}
-        <div role="tablist" className="grid grid-cols-2 gap-px bg-slate-200 dark:bg-slate-800 rounded-t-lg overflow-hidden">
+        <div role="tablist" className="grid grid-cols-2 gap-px bg-slate-300 dark:bg-slate-700">
           <TabButton
             active={mainTab === "ai"}
             onClick={() => setMainTab("ai")}
@@ -127,7 +133,7 @@ export function VerifyMediaPage() {
         </div>
 
         {/* Tab content card */}
-        <section className="bg-[#041E42] dark:bg-slate-900 rounded-b-lg p-5 md:p-6 ring-1 ring-transparent dark:ring-slate-800">
+        <section className="bg-[#041E42] dark:bg-slate-900 p-5 md:p-6">
           {mainTab === "ai" && (
             <>
               {/* Light inner panel — high-contrast entry area, per the live site */}
@@ -211,6 +217,16 @@ export function VerifyMediaPage() {
                     </button>
                   ))}
                 </div>
+
+                {/* Version limitation note — video links aren't processed yet */}
+                <p className="mt-4 text-xs leading-snug text-[#041E42] flex items-start gap-1.5">
+                  <HiOutlineInformationCircle className="w-4 h-4 mt-[1px] shrink-0" />
+                  <span>
+                    In this version, links to <strong className="font-semibold">video</strong> are
+                    not processed. To check the audio of a video, download the MP3 file and upload it
+                    directly to analyze.
+                  </span>
+                </p>
               </div>
 
               {/* Supported sources */}
@@ -235,32 +251,73 @@ export function VerifyMediaPage() {
           {mainTab === "false" && (
             <div className="bg-slate-200 dark:bg-slate-300 rounded-lg p-5 md:p-6">
               <div className="text-lg font-bold text-[#041E42] mb-3">
-                Enter text to check
+                {falseSubTab === "url" ? "Add social media post" : "Enter text to check"}
               </div>
-              <textarea
-                value={claimText}
-                onChange={(e) => setClaimText(e.target.value)}
-                rows={5}
-                placeholder="Paste or type a claim, headline, or quote to fact-check…"
-                className="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-400 text-base rounded-lg px-4 py-3 focus:outline-none focus:border-[#00B5E2] focus:ring-1 focus:ring-[#00B5E2]"
-              />
-              <div className="flex items-center justify-between mt-4">
-                <div className="inline-flex rounded-lg bg-[#041E42] p-1">
-                  <span className="px-4 py-2 rounded-md text-sm font-medium bg-slate-600 text-white">
-                    Enter Text
-                  </span>
-                </div>
-                <button
-                  onClick={goAnalyzeText}
-                  className="bg-[#00B5E2] hover:bg-[#0099C2] text-[#041E42] font-semibold text-base px-6 py-2.5 rounded-lg flex items-center gap-2 transition"
+
+              {falseSubTab === "url" ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    goAnalyzeText();
+                  }}
+                  className="flex gap-3"
                 >
-                  Analyze
-                  <HiOutlinePaperAirplane className="w-4 h-4" />
-                </button>
+                  <input
+                    value={claimUrl}
+                    onChange={(e) => setClaimUrl(e.target.value)}
+                    type="text"
+                    placeholder="Add a URL…"
+                    className="flex-1 bg-slate-700 border border-slate-600 text-white placeholder-slate-400 text-base rounded-lg px-4 py-3 focus:outline-none focus:border-[#00B5E2] focus:ring-1 focus:ring-[#00B5E2]"
+                  />
+                  <button
+                    type="submit"
+                    className="bg-[#00B5E2] hover:bg-[#0099C2] text-[#041E42] font-semibold text-base px-6 rounded-lg flex items-center gap-2 transition shrink-0"
+                  >
+                    Analyze
+                    <HiOutlinePaperAirplane className="w-4 h-4" />
+                  </button>
+                </form>
+              ) : (
+                <>
+                  <textarea
+                    value={claimText}
+                    onChange={(e) => setClaimText(e.target.value)}
+                    rows={5}
+                    placeholder="Paste or type a claim, headline, or quote to fact-check…"
+                    className="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-400 text-base rounded-lg px-4 py-3 focus:outline-none focus:border-[#00B5E2] focus:ring-1 focus:ring-[#00B5E2]"
+                  />
+                  <div className="flex justify-end mt-3">
+                    <button
+                      onClick={goAnalyzeText}
+                      className="bg-[#00B5E2] hover:bg-[#0099C2] text-[#041E42] font-semibold text-base px-6 py-2.5 rounded-lg flex items-center gap-2 transition"
+                    >
+                      Analyze
+                      <HiOutlinePaperAirplane className="w-4 h-4" />
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* Sub-tab pills — mirror the AIGC box */}
+              <div className="inline-flex rounded-lg bg-[#041E42] p-1 mt-4">
+                {(["url", "text"] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setFalseSubTab(t)}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition ${
+                      falseSubTab === t
+                        ? "bg-slate-600 text-white"
+                        : "text-slate-300 hover:text-white"
+                    }`}
+                  >
+                    {t === "url" ? "Social Media URL" : "Enter Text"}
+                  </button>
+                ))}
               </div>
             </div>
           )}
         </section>
+        </div>
 
         {/* History preview */}
         <section className="mt-10">
@@ -366,7 +423,7 @@ function TabButton({
       className={`px-4 py-3 text-sm font-medium flex items-center justify-center gap-2 transition ${
         active
           ? "bg-[#041E42] text-white dark:bg-slate-900"
-          : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-[#041E42] dark:hover:text-white"
+          : "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-[#041E42] dark:hover:text-white"
       }`}
     >
       {icon}
@@ -377,10 +434,10 @@ function TabButton({
 
 // Frame border color for the history preview thumbnail — matches the verdict tier.
 const VERDICT_BORDER: Record<string, string> = {
-  "substantial-evidence": "border-[#DC2626]",
-  "some-evidence": "border-[#F59E0B]",
+  "substantial-evidence": "border-[#D50032]",
+  "some-evidence": "border-[#EFCB5F]",
   uncertain: "border-slate-500",
-  "little-evidence": "border-[#84CC16]",
+  "little-evidence": "border-[#94C063]",
   pending: "border-slate-600",
 };
 
@@ -390,9 +447,9 @@ function HistoryMediaPreview() {
     <div className="bg-[#041E42] dark:bg-slate-900 text-white rounded-lg overflow-hidden ring-1 ring-transparent dark:ring-slate-800">
       <div className="hidden lg:grid grid-cols-12 px-4 py-2.5 bg-slate-700/70 text-[11px] uppercase tracking-wide text-slate-200 font-semibold">
         <div className="col-span-3">Preview</div>
-        <div className="col-span-6" />
+        <div className="col-span-5" />
         <div className="col-span-2 text-center">Media Type</div>
-        <div className="col-span-1 text-right">First Queried</div>
+        <div className="col-span-2 text-right whitespace-nowrap">First Queried</div>
       </div>
 
       {recent.map((r, idx) => {
@@ -418,7 +475,7 @@ function HistoryMediaPreview() {
             </div>
 
             {/* Pill + URL/name */}
-            <div className="col-span-6 min-w-0">
+            <div className="col-span-5 min-w-0">
               <div className="mb-2">
                 <VerdictBadge verdict={r.verdict} size="sm" />
               </div>
@@ -434,7 +491,7 @@ function HistoryMediaPreview() {
             </div>
 
             {/* Date */}
-            <div className="hidden lg:block col-span-1 text-right text-sm text-slate-400 whitespace-nowrap">
+            <div className="hidden lg:block col-span-2 text-right text-sm text-slate-400 whitespace-nowrap">
               {r.analyzedAt}
             </div>
           </a>
@@ -454,10 +511,11 @@ function HistoryMediaPreview() {
 function HistoryClaimsPreview() {
   return (
     <div className="bg-[#041E42] dark:bg-slate-900 text-white rounded-lg overflow-hidden ring-1 ring-transparent dark:ring-slate-800">
-      <div className="grid grid-cols-12 px-4 py-2.5 bg-slate-700/70 text-[11px] uppercase tracking-wide text-slate-200 font-semibold">
-        <div className="col-span-8 lg:col-span-9">Preview</div>
-        <div className="col-span-2 text-center">Type</div>
-        <div className="hidden lg:block col-span-1 text-right">First Queried</div>
+      {/* Fixed-width Type + Date lanes so the date can never be squeezed/clipped */}
+      <div className="grid grid-cols-[1fr_auto] lg:grid-cols-[1fr_auto_6.5rem] gap-4 px-4 py-2.5 bg-slate-700/70 text-[11px] uppercase tracking-wide text-slate-200 font-semibold">
+        <div>Preview</div>
+        <div className="text-center">Type</div>
+        <div className="hidden lg:block text-right whitespace-nowrap">First Queried</div>
       </div>
       {claimHistory.slice(0, 2).map((c) => {
         const p = CLAIM_PILL[c.verdict];
@@ -465,9 +523,9 @@ function HistoryClaimsPreview() {
           <a
             key={c.id}
             href={`/claim/veracity?id=${c.id}`}
-            className="grid grid-cols-12 px-4 py-4 border-t border-slate-700 items-start hover:bg-slate-800/40 transition gap-4"
+            className="grid grid-cols-[1fr_auto] lg:grid-cols-[1fr_auto_6.5rem] px-4 py-4 border-t border-slate-700 items-start hover:bg-slate-800/40 transition gap-4"
           >
-            <div className="col-span-8 lg:col-span-9 min-w-0">
+            <div className="min-w-0">
               <div className="mb-2">
                 <span className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded ${p.classes}`}>
                   {p.label}
@@ -477,11 +535,11 @@ function HistoryClaimsPreview() {
                 {c.text}
               </div>
             </div>
-            <div className="col-span-2 flex items-center justify-center gap-1.5 text-sm text-slate-300 pt-1">
+            <div className="flex items-center justify-center gap-1.5 text-sm text-slate-300 pt-1">
               <HiOutlineDocumentText className="w-4 h-4 text-slate-400" />
               <span className="text-xs">Text</span>
             </div>
-            <div className="hidden lg:block col-span-1 text-right text-sm text-slate-400 whitespace-nowrap pt-1">
+            <div className="hidden lg:block text-right text-xs text-slate-400 whitespace-nowrap pt-1">
               {c.analyzedAt}
             </div>
           </a>
@@ -505,9 +563,9 @@ function HistoryClaimsPreview() {
 // ─────────────────────────────────────────────────────────────────────
 
 const TRUTH_PILL: Record<RealCase["groundTruth"], { label: (t: string) => string; classes: string }> = {
-  fake: { label: (t) => `AI manipulated ${t}`, classes: "bg-[#771D1D] text-[#F8B4B5]" },
-  authentic: { label: (t) => `Authentic ${t}`, classes: "bg-[#014737] text-[#84E1BD]" },
-  unlabeled: { label: () => "Unlabeled", classes: "bg-[#374051] text-white" },
+  fake: { label: (t) => `AI manipulated ${t}`, classes: "bg-[#862633] text-[#F6C6D0]" },
+  authentic: { label: (t) => `Authentic ${t}`, classes: "bg-[#3F6B07] text-[#C2DBA4]" },
+  unlabeled: { label: () => "Unlabeled", classes: "bg-[#63666A] text-white" },
 };
 
 function hostnameOf(url?: string) {
@@ -556,16 +614,15 @@ function NotableCard({ c }: { c: RealCase }) {
         <div className="text-xs text-[#041E42] dark:text-slate-300 truncate min-w-0">
           {sourceHost ? (
             <>
-              Documented by <span className="font-mono">{sourceHost}</span>
+              Source: <span className="font-mono">{sourceHost}</span>
             </>
           ) : (
             "TrueMedia curated case"
           )}
         </div>
+        {/* "More" opens the TrueMedia verdict page, not the external source */}
         <a
-          href={c.citationUrl ?? "/media/notable"}
-          target={c.citationUrl ? "_blank" : undefined}
-          rel={c.citationUrl ? "noopener noreferrer" : undefined}
+          href="/media/analysis"
           className="inline-flex items-center gap-1 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-transparent text-sm text-[#041E42] dark:text-slate-200 px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition shrink-0"
         >
           More <HiOutlineArrowRight className="w-4 h-4" />

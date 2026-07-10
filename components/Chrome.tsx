@@ -210,7 +210,7 @@ function Sidebar({
 
         {/* User chip */}
         <div className="mt-3 flex items-center gap-2 px-2.5 py-2 rounded-md hover:bg-white/60 dark:hover:bg-slate-700/60 transition cursor-pointer">
-          <div className="w-7 h-7 rounded-full bg-[#00B5E2] text-[#3A3A3A] text-[10px] font-semibold flex items-center justify-center shrink-0">
+          <div className="w-7 h-7 rounded-full bg-[#00B5E2] text-[#041E42] text-[10px] font-semibold flex items-center justify-center shrink-0">
             RO
           </div>
           <span

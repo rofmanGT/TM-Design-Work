@@ -201,7 +201,7 @@ function VerdictHero() {
           </p>
           <a
             href="#"
-            className="text-xs text-[#00B5E2] hover:text-[#33D6FF] hover:underline self-start"
+            className="text-xs text-[#00B5E2] hover:text-[#5FC9EB] hover:underline self-start"
           >
             Read full ensemble methodology →
           </a>

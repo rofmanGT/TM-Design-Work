@@ -16,9 +16,11 @@ type Props = {
   weight?: number;
   /** Optional leading icon next to the detector name. */
   icon?: ReactNode;
+  /** Optional model-backbone tag (e.g. "wav2vec2") shown as a small mono chip. */
+  tag?: string;
 };
 
-export function DetectorCard({ name, description, confidence, verdict, weight, icon }: Props) {
+export function DetectorCard({ name, description, confidence, verdict, weight, icon, tag }: Props) {
   const v = verdict ?? verdictFromConfidence(confidence);
 
   return (
@@ -33,7 +35,12 @@ export function DetectorCard({ name, description, confidence, verdict, weight, i
 
         <div className="mt-3 flex items-center gap-2 font-semibold text-[15px] leading-snug">
           <span className="text-slate-400 shrink-0 [&>svg]:w-4 [&>svg]:h-4">{icon}</span>
-          {name}
+          <span className="min-w-0">{name}</span>
+          {tag && (
+            <span className="ml-auto shrink-0 font-mono font-normal text-[10px] text-slate-400 bg-slate-800 dark:bg-slate-800 rounded px-1.5 py-0.5">
+              {tag}
+            </span>
+          )}
         </div>
 
         {/* Description as quiet body copy behind a hairline — no box-in-box */}

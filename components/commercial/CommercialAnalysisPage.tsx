@@ -13,7 +13,7 @@ import {
   HiOutlineShare,
   HiOutlineArrowDownTray,
   HiOutlineLink,
-  HiOutlineEllipsisHorizontal,
+  HiOutlineCheck,
   HiOutlineChevronRight,
   HiOutlineFingerPrint,
   HiOutlineFaceSmile,
@@ -32,7 +32,7 @@ import {
   type Verdict,
   type DetectorResult,
 } from "@/components/ensemble";
-import { REAL_DETECTORS, REAL_CATEGORIES, type RealCategoryId } from "@/components/real/realData";
+import { REAL_DETECTORS } from "@/components/real/realData";
 
 // ─────────────────────────────────────────────────────────────────────
 // REAL detector roster for a video-with-audio case. Names, descriptions,
@@ -46,14 +46,9 @@ import { REAL_DETECTORS, REAL_CATEGORIES, type RealCategoryId } from "@/componen
 type CategorizedDetector = DetectorResult & {
   icon: React.ReactNode;
   description?: string;
-};
-
-type Category = {
-  id: string;
-  name: string;
-  subtitle: string;
-  icon: React.ReactNode;
-  detectors: CategorizedDetector[];
+  /** Model-backbone tag shown as a small chip on the card (disambiguates
+      the two "Audio Analysis" models). */
+  tag?: string;
 };
 
 const rd = (key: string) => {
@@ -73,44 +68,34 @@ type AnalysisView = {
   source: { platform: string; url: string };
   fileType: string;
   fileSize: string;
-  categories: Category[];
+  /** The models that actually run for this media type. The team currently
+      ships two in-house models per stream, so each view lists exactly two. */
+  detectors: CategorizedDetector[];
 };
 
-// Terse builders that pull real names + descriptions from realData.
+// Terse builder that pulls real names + descriptions from realData.
 const det = (
   key: string,
   confidence: number,
-  icon: React.ReactNode
+  icon: React.ReactNode,
+  tag?: string
 ): CategorizedDetector => ({
   name: rd(key).name,
   description: rd(key).descrip,
   confidence,
   icon,
-});
-const cat = (
-  id: RealCategoryId,
-  icon: React.ReactNode,
-  detectors: CategorizedDetector[]
-): Category => ({
-  id,
-  name: REAL_CATEGORIES[id].label,
-  subtitle: REAL_CATEGORIES[id].descrip,
-  icon,
-  detectors,
+  tag,
 });
 
 const FaceI = <HiOutlineFaceSmile className="w-5 h-5" />;
-const GenI = <HiOutlineSparkles className="w-5 h-5" />;
 const NoiseI = <HiOutlinePhoto className="w-5 h-5" />;
 const MicI = <HiOutlineMicrophone className="w-5 h-5" />;
-const NoteI = <HiOutlineMusicalNote className="w-5 h-5" />;
-const PrintI = <HiOutlineFingerPrint className="w-5 h-5" />;
-const TextI = <HiOutlineChatBubbleBottomCenterText className="w-5 h-5" />;
-const FilmI = <HiOutlineFilm className="w-5 h-5" />;
 
 // This demo reuses one documented example per media type (no real uploads
-// yet), so a top-right toggle previews each view. Every roster uses only the
-// detectors that actually apply to that media type, with real names/descrips.
+// yet), so a top-right toggle previews each view. Each view lists the two
+// in-house models that actually run for that media stream — DIRE + FIRE for
+// images, Wav2vec2 + Wav2vec2-TRILLsson for audio, and (for video) the
+// visual frame model plus the audio-track model.
 const MEDIA_VIEWS: Record<MediaKind, AnalysisView> = {
   image: {
     // Xóchitl Gálvez flag image — documented manipulation (RestOfWorld).
@@ -120,13 +105,9 @@ const MEDIA_VIEWS: Record<MediaKind, AnalysisView> = {
     source: { platform: "X (Twitter)", url: "restofworld.org/…" },
     fileType: "JPG",
     fileSize: "1.2 MB",
-    categories: [
-      cat("imagen", GenI, [
-        det("sensity-image", 77, GenI),
-        det("microsoft", 69, GenI),
-        det("aion-image", 63, GenI),
-      ]),
-      cat("noise", NoiseI, [det("dire", 66, NoiseI), det("fire", 71, NoiseI)]),
+    detectors: [
+      det("dire", 66, NoiseI, "DIRE"),
+      det("fire", 71, NoiseI, "FIRE"),
     ],
   },
   video: {
@@ -137,18 +118,9 @@ const MEDIA_VIEWS: Record<MediaKind, AnalysisView> = {
     source: { platform: "Awareness campaign", url: "act.represent.us/…" },
     fileType: "MP4",
     fileSize: "8.2 MB",
-    categories: [
-      cat("face", FaceI, [
-        det("genconvit", 72, FaceI),
-        det("sensity-face", 64, PrintI),
-        det("intel", 69, FilmI),
-      ]),
-      cat("audio", MicI, [
-        det("wav2vec2", 86, MicI),
-        det("dftotal", 79, NoteI),
-        det("loccus", 74, NoteI),
-      ]),
-      cat("semantic", TextI, [det("openai-transcript", 41, TextI)]),
+    detectors: [
+      det("genconvit", 72, FaceI, "GenConViT"),
+      det("wav2vec2", 86, MicI, "wav2vec2"),
     ],
   },
   audio: {
@@ -160,14 +132,9 @@ const MEDIA_VIEWS: Record<MediaKind, AnalysisView> = {
     source: { platform: "Robocall", url: "apnews.com/…" },
     fileType: "WAV",
     fileSize: "2.4 MB",
-    categories: [
-      cat("audio", MicI, [
-        det("wav2vec2", 86, MicI),
-        det("dftotal", 82, NoteI),
-        det("loccus", 79, NoteI),
-        det("pindrop", 74, MicI),
-      ]),
-      cat("semantic", TextI, [det("openai-transcript", 68, TextI)]),
+    detectors: [
+      det("wav2vec2", 86, MicI, "wav2vec2"),
+      det("wav2vec2trill", 82, MicI, "wav2vec2-TRILLsson"),
     ],
   },
 };
@@ -186,16 +153,34 @@ const MEDIA_TABS: { kind: MediaKind; label: string; Icon: React.ComponentType<{ 
 ];
 
 // Per-detector completion offsets (ms) for the analyses phase, staggered by
-// position in the active roster so the stream feels natural for any view.
-function timingFor(categories: Category[]): { map: Record<string, number>; total: number } {
-  const map: Record<string, number> = {};
-  categories
-    .flatMap((c) => c.detectors)
-    .forEach((d, i) => {
-      map[d.name] = 700 + i * 550;
-    });
-  const total = Math.max(...Object.values(map), 700);
+// position so the stream feels natural. Keyed by index (the two audio
+// models share a display name, so a name-keyed map would collide).
+function timingFor(detectors: CategorizedDetector[]): { map: number[]; total: number } {
+  const map = detectors.map((_, i) => 700 + i * 550);
+  const total = Math.max(...map, 700);
   return { map, total };
+}
+
+// ── Hero action handlers (client-only) ──────────────────────────────
+// Share: native share sheet where available, else copy the permalink.
+function shareAnalysis() {
+  if (typeof window === "undefined") return;
+  const url = window.location.href;
+  const data = {
+    title: "TrueMedia.org analysis",
+    text: "TrueMedia.org media-authenticity analysis",
+    url,
+  };
+  if (navigator.share) {
+    navigator.share(data).catch(() => {});
+  } else {
+    navigator.clipboard?.writeText(url);
+  }
+}
+
+// Download: the whole result page, via the browser's print-to-PDF dialog.
+function downloadReport() {
+  if (typeof window !== "undefined") window.print();
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -213,7 +198,7 @@ export function CommercialAnalysisPage() {
   );
   const view = MEDIA_VIEWS[mediaView];
   const { map: freshTiming, total: freshTotalMs } = useMemo(
-    () => timingFor(view.categories),
+    () => timingFor(view.detectors),
     [view]
   );
 
@@ -234,27 +219,21 @@ export function CommercialAnalysisPage() {
     return () => cancelAnimationFrame(raf);
   }, [fresh, freshTotalMs]);
 
-  // Live detector list — when fresh, override verdict to "pending" until each completes.
-  const liveCategories = useMemo(() => {
-    if (!fresh || elapsed >= freshTotalMs) return view.categories;
-    return view.categories.map((c) => ({
-      ...c,
-      detectors: c.detectors.map((d) => {
-        const completeAt = freshTiming[d.name] ?? freshTotalMs;
-        const done = elapsed >= completeAt;
-        return done ? d : { ...d, verdict: "pending" as Verdict };
-      }),
-    }));
+  // Live detector cards — when fresh, override verdict to "pending" until each completes.
+  const liveDetectorCards = useMemo(() => {
+    if (!fresh || elapsed >= freshTotalMs) return view.detectors;
+    return view.detectors.map((d, i) => {
+      const done = elapsed >= (freshTiming[i] ?? freshTotalMs);
+      return done ? d : { ...d, verdict: "pending" as Verdict };
+    });
   }, [fresh, elapsed, view, freshTiming, freshTotalMs]);
 
-  const liveDetectors: DetectorResult[] = liveCategories.flatMap((c) =>
-    c.detectors.map((d) => ({
-      name: d.name,
-      confidence: d.confidence,
-      verdict: d.verdict,
-      weight: d.weight,
-    }))
-  );
+  const liveDetectors: DetectorResult[] = liveDetectorCards.map((d) => ({
+    name: d.name,
+    confidence: d.confidence,
+    verdict: d.verdict,
+    weight: d.weight,
+  }));
 
   const { confidence, verdict, agreeingCount, activeCount } = ensembleConfidence(liveDetectors);
 
@@ -347,18 +326,13 @@ export function CommercialAnalysisPage() {
                       <span className="truncate">{view.fileName}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <IconButton label="Share">
+                      <IconButton label="Share this analysis" onClick={shareAnalysis}>
                         <HiOutlineShare className="w-4 h-4" />
                       </IconButton>
-                      <IconButton label="Download report">
+                      <IconButton label="Download report (PDF)" onClick={downloadReport}>
                         <HiOutlineArrowDownTray className="w-4 h-4" />
                       </IconButton>
-                      <IconButton label="Copy link">
-                        <HiOutlineLink className="w-4 h-4" />
-                      </IconButton>
-                      <IconButton label="More">
-                        <HiOutlineEllipsisHorizontal className="w-4 h-4" />
-                      </IconButton>
+                      <CopyLinkButton />
                     </div>
                   </div>
 
@@ -409,45 +383,30 @@ export function CommercialAnalysisPage() {
               </div>
             </section>
 
-      {/* CATEGORIES — horizontal flex-wrap (stacks left→right at wide screens, wraps below) */}
-      <div className="mt-10 flex flex-wrap gap-6">
-        {liveCategories.map((cat) => (
-          <section
-            key={cat.id}
-            className="flex-1 min-w-[280px] flex flex-col"
-          >
-            {/* Understated editorial header: muted icon, tight title, mono count, hairline rule */}
-            <div className="pb-2.5 mb-3 border-b border-slate-200 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <span className="text-slate-500 dark:text-slate-400 [&>svg]:w-[18px] [&>svg]:h-[18px]">
-                  {cat.icon}
-                </span>
-                <h2 className="text-base font-semibold tracking-tight text-[#041E42] dark:text-slate-100">
-                  {cat.name}
-                </h2>
-                <span className="text-[11px] font-mono tabular-nums text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-700 rounded-full min-w-[20px] h-5 px-1 inline-flex items-center justify-center">
-                  {cat.detectors.length}
-                </span>
-              </div>
-              <div className="text-slate-500 dark:text-slate-400 text-xs mt-0.5 ml-[26px]">
-                {cat.subtitle}
-              </div>
-            </div>
-            <div className="flex flex-col gap-3">
-              {cat.detectors.map((d, i) => (
-                <DetectorCard
-                  key={`${cat.id}-${i}-${d.name}`}
-                  name={d.name}
-                  description={d.description}
-                  confidence={d.confidence}
-                  verdict={d.verdict}
-                  icon={d.icon}
-                />
-              ))}
-            </div>
-          </section>
-        ))}
-      </div>
+      {/* DETECTORS — the two in-house models that run for this media stream */}
+      <section className="mt-10">
+        <div className="pb-2.5 mb-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2">
+          <h2 className="text-base font-semibold tracking-tight text-[#041E42] dark:text-slate-100">
+            Detectors
+          </h2>
+          <span className="text-[11px] font-mono tabular-nums text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-700 rounded-full min-w-[20px] h-5 px-1 inline-flex items-center justify-center">
+            {liveDetectorCards.length}
+          </span>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-4 max-w-3xl">
+          {liveDetectorCards.map((d, i) => (
+            <DetectorCard
+              key={`${i}-${d.name}`}
+              name={d.name}
+              description={d.description}
+              confidence={d.confidence}
+              verdict={d.verdict}
+              icon={d.icon}
+              tag={d.tag}
+            />
+          ))}
+        </div>
+      </section>
 
       {/* DETAILS — always its own row below the categories */}
       <section className="mt-10">
@@ -494,17 +453,47 @@ export function CommercialAnalysisPage() {
 function IconButton({
   children,
   label,
+  onClick,
 }: {
   children: React.ReactNode;
   label: string;
+  onClick?: () => void;
 }) {
   return (
     <button
+      type="button"
+      onClick={onClick}
       title={label}
       aria-label={label}
       className="p-1.5 text-slate-300 hover:text-white hover:bg-slate-700/60 rounded transition"
     >
       {children}
+    </button>
+  );
+}
+
+// Copies the permalink to this analysis, with brief inline confirmation.
+function CopyLinkButton() {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      title={copied ? "Link copied" : "Copy link to this analysis"}
+      aria-label="Copy link to this analysis"
+      onClick={() => {
+        if (typeof window === "undefined") return;
+        navigator.clipboard?.writeText(window.location.href).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        });
+      }}
+      className="p-1.5 text-slate-300 hover:text-white hover:bg-slate-700/60 rounded transition"
+    >
+      {copied ? (
+        <HiOutlineCheck className="w-4 h-4 text-[#94C063]" />
+      ) : (
+        <HiOutlineLink className="w-4 h-4" />
+      )}
     </button>
   );
 }

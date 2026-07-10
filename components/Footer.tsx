@@ -26,7 +26,7 @@ const BUILD_HASH = "a1b9f3c";
 // media — safe to ship as a fixed string.
 const BIBTEX = `@misc{truemedia2026,
   title        = {TrueMedia: Open-Source Deepfake Detection},
-  author       = {{Georgetown University Media Integrity Lab}},
+  author       = {{Georgetown University}},
   year         = {2026},
   howpublished = {\\url{https://www.truemedia.org}},
   note         = {Ensemble detection platform, ${BUILD_VERSION}}
@@ -73,7 +73,7 @@ export function Footer() {
             <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400 max-w-xs">
               An open-source research project of{" "}
               <span className="font-medium text-[#041E42] dark:text-slate-200">
-                Georgetown University&rsquo;s Media Integrity Lab
+                Georgetown University
               </span>
               .
             </p>
@@ -185,7 +185,7 @@ function FooterColumn({
 
 function Badge({ children, icon }: { children: React.ReactNode; icon: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#00B5E2]/15 text-[#0883a3] dark:text-[#33D6FF] ring-1 ring-[#00B5E2]/30">
+    <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#00B5E2]/15 text-[#003DA5] dark:text-[#5FC9EB] ring-1 ring-[#00B5E2]/30">
       {icon}
       {children}
     </span>

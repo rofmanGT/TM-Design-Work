@@ -73,10 +73,10 @@ const SOURCE_OPTS: (Source | "all")[] = [
 ];
 
 const VERDICT_BORDER: Record<string, string> = {
-  "substantial-evidence": "border-[#DC2626]",
-  "some-evidence": "border-[#F59E0B]",
+  "substantial-evidence": "border-[#D50032]",
+  "some-evidence": "border-[#EFCB5F]",
   uncertain: "border-slate-500",
-  "little-evidence": "border-[#84CC16]",
+  "little-evidence": "border-[#94C063]",
   pending: "border-slate-600",
 };
 
@@ -237,9 +237,9 @@ export function HistoryPage() {
         {/* Media table */}
         <div className="hidden lg:grid grid-cols-12 px-5 py-2.5 bg-slate-700/40 text-[11px] uppercase tracking-wide text-slate-300">
           <div className="col-span-3">Preview</div>
-          <div className="col-span-6" />
+          <div className="col-span-5" />
           <div className="col-span-2 text-center">Media Type</div>
-          <div className="col-span-1 text-right">First Queried</div>
+          <div className="col-span-2 text-right whitespace-nowrap">First Queried</div>
         </div>
 
         {mediaFiltered.map((item, idx) => {
@@ -264,7 +264,7 @@ export function HistoryPage() {
                   />
                 </div>
               </div>
-              <div className="col-span-12 lg:col-span-6 min-w-0">
+              <div className="col-span-12 lg:col-span-5 min-w-0">
                 <div className="mb-2">
                   <VerdictBadge verdict={item.verdict} size="sm" />
                 </div>
@@ -276,7 +276,7 @@ export function HistoryPage() {
                 <Icon className="w-4 h-4 text-slate-400" />
                 <span className="capitalize">{item.type}</span>
               </div>
-              <div className="hidden lg:block col-span-1 text-right text-xs text-slate-400 whitespace-nowrap">
+              <div className="hidden lg:block col-span-2 text-right text-xs text-slate-400 whitespace-nowrap">
                 {item.analyzedAt}
               </div>
             </a>
@@ -298,9 +298,9 @@ export function HistoryPage() {
       {/* Claims section card */}
       <section className="bg-[#041E42] dark:bg-slate-900 text-white rounded-lg overflow-hidden ring-1 ring-transparent dark:ring-slate-800">
         <div className="hidden lg:grid grid-cols-12 px-5 py-2.5 bg-slate-700/40 text-[11px] uppercase tracking-wide text-slate-300">
-          <div className="col-span-9">Preview</div>
+          <div className="col-span-8">Preview</div>
           <div className="col-span-2 text-center">Type</div>
-          <div className="col-span-1 text-right">First Queried</div>
+          <div className="col-span-2 text-right whitespace-nowrap">First Queried</div>
         </div>
 
         {claimHistory.map((c) => {
@@ -311,7 +311,7 @@ export function HistoryPage() {
               href={`/claim/veracity?id=${c.id}`}
               className="grid grid-cols-12 px-5 py-4 border-t border-slate-700/60 items-start hover:bg-slate-800/40 transition gap-4"
             >
-              <div className="col-span-12 lg:col-span-9 min-w-0">
+              <div className="col-span-12 lg:col-span-8 min-w-0">
                 <div className="mb-2">
                   <span
                     className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded ${p.classes}`}
@@ -327,7 +327,7 @@ export function HistoryPage() {
                 <HiOutlineDocumentText className="w-4 h-4 text-slate-400" />
                 <span className="text-xs">Text</span>
               </div>
-              <div className="hidden lg:block col-span-1 text-right text-xs text-slate-400 whitespace-nowrap pt-1">
+              <div className="hidden lg:block col-span-2 text-right text-xs text-slate-400 whitespace-nowrap pt-1">
                 {c.analyzedAt}
               </div>
             </a>

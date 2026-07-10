@@ -25,6 +25,11 @@ export type VerdictStyle = {
   label: string;
   pillBg: string;
   pillText: string;
+  /** Text color for the verdict when shown as text on the navy result card
+      (#041E42). A LIGHT tint of the verdict hue — pillText can be dark (navy
+      on a yellow/green pill), which is invisible on the navy card, so this
+      must always clear WCAG-AA on navy. */
+  onDark: string;
   bar: string;
   /** Media-frame background — the production "neon" manipulation palette. */
   frame: string;
@@ -33,56 +38,59 @@ export type VerdictStyle = {
   Icon: ComponentType<{ className?: string }>;
 };
 
-// Pill colors are the EXACT badge hex values from the production repo
-// (apps/detect/app/data/model.ts `ranks`): high #771D1D/#F8B4B5,
-// uncertain #623112/#FBCA16, low #014737/#84E1BD, unknown #374051.
-// NOTE: the real taxonomy has three evidence tiers (low/uncertain/high) —
-// its "uncertain" renders with adjective "some" in verdict sentences. Our
-// four-tier split (uncertain vs some-evidence) is a design exploration on
-// top of that; "some-evidence" borrows the real uncertain badge colors.
+// Signal colours are drawn from the Georgetown tertiary palette so the
+// verdict system stays on-brand: Green 369 #64A70B (little), Yellow 1205
+// #F8E08E (some), Red 202/199 #862633 · #D50032 (substantial), Georgetown
+// Gray #63666A (uncertain / pending). Text colours are navy (#041E42) or
+// white, whichever clears WCAG-AA on the given hue.
 export const VERDICT_STYLES: Record<Verdict, VerdictStyle> = {
   "substantial-evidence": {
     label: "Substantial Evidence",
-    pillBg: "bg-[#771D1D]",
-    pillText: "text-[#F8B4B5]",
-    bar: "bg-[#DC2626]",
-    frame: "bg-[#FF0F00]", // production manipulation-high-500
+    pillBg: "bg-[#862633]", // GU Red 202
+    pillText: "text-white",
+    onDark: "text-[#EC8D9F]", // light red — readable on navy
+    bar: "bg-[#D50032]", // GU Light Red 199
+    frame: "bg-[#D50032]",
     frameText: "text-white",
     Icon: HiOutlineXCircle,
   },
   "some-evidence": {
     label: "Some Evidence",
-    pillBg: "bg-[#623112]",
-    pillText: "text-[#FBCA16]",
-    bar: "bg-[#F59E0B]",
-    frame: "bg-[#F1F521]", // production manipulation-uncertain-500
-    frameText: "text-[#422006]",
+    pillBg: "bg-[#F8E08E]", // GU Yellow 1205
+    pillText: "text-[#041E42]",
+    onDark: "text-[#F8E08E]", // yellow — reads clearly on navy
+    bar: "bg-[#F8E08E]",
+    frame: "bg-[#F8E08E]",
+    frameText: "text-[#041E42]",
     Icon: HiOutlineExclamationCircle,
   },
   "little-evidence": {
     label: "Little Evidence",
-    pillBg: "bg-[#014737]",
-    pillText: "text-[#84E1BD]",
-    bar: "bg-[#84CC16]",
-    frame: "bg-[#93EF23]", // production manipulation-low-500
-    frameText: "text-[#052e16]",
+    pillBg: "bg-[#64A70B]", // GU Green 369
+    pillText: "text-[#041E42]",
+    onDark: "text-[#C2DBA4]", // light green — readable on navy
+    bar: "bg-[#64A70B]",
+    frame: "bg-[#64A70B]",
+    frameText: "text-[#041E42]",
     Icon: HiOutlineCheckCircle,
   },
   uncertain: {
     label: "Uncertain",
-    pillBg: "bg-[#374051]",
-    pillText: "text-slate-300",
-    bar: "bg-slate-500",
-    frame: "bg-[#708090]", // production manipulation-unresolved-500
+    pillBg: "bg-[#63666A]", // Georgetown Gray
+    pillText: "text-white",
+    onDark: "text-[#CDCECF]", // light gray — readable on navy
+    bar: "bg-[#63666A]",
+    frame: "bg-[#63666A]",
     frameText: "text-white",
     Icon: HiOutlineQuestionMarkCircle,
   },
   pending: {
     label: "Pending",
-    pillBg: "bg-slate-600",
-    pillText: "text-slate-300",
-    bar: "bg-slate-600",
-    frame: "bg-slate-600",
+    pillBg: "bg-[#8E9093]", // GU Gray 70% tint
+    pillText: "text-white",
+    onDark: "text-[#CDCECF]", // light gray — readable on navy
+    bar: "bg-[#8E9093]",
+    frame: "bg-[#8E9093]",
     frameText: "text-white",
     Icon: HiOutlineClock,
   },

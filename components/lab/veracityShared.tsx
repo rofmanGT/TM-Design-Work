@@ -205,7 +205,7 @@ export function EvidencePassageCard({ evidence }: { evidence: EnsembleEvidence }
           href={evidence.href}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs text-[#00B5E2] hover:text-[#33D6FF] transition"
+          className="inline-flex items-center gap-1.5 text-xs text-[#00B5E2] hover:text-[#5FC9EB] transition"
         >
           Read on {evidence.source}
           <HiOutlineArrowTopRightOnSquare className="w-3.5 h-3.5" />
@@ -255,11 +255,13 @@ export function EvidenceLegend({ count }: { count: number }) {
 // Labels match the production repo's verdict `longSummary` strings
 // (data/claimVerdict.ts). Our four verdicts map to the real four:
 // likely-true←low, likely-false←high, mixed←uncertain, unresolved←unknown.
-const BANNER: Record<ClaimVerdict, { bar: string; label: string }> = {
-  "likely-false": { bar: "bg-[#E5341F]", label: "Likely false" },
-  "likely-true": { bar: "bg-emerald-600", label: "Likely true" },
-  mixed: { bar: "bg-amber-500", label: "Mixed or unclear evidence" },
-  unresolved: { bar: "bg-slate-500", label: "Not enough evidence to verify" },
+// Georgetown tertiary palette. Green/yellow need navy text (white fails
+// AA on them); red/gray carry white.
+const BANNER: Record<ClaimVerdict, { bar: string; text: string; label: string }> = {
+  "likely-false": { bar: "bg-[#D50032]", text: "text-white", label: "Likely false" },
+  "likely-true": { bar: "bg-[#64A70B]", text: "text-[#041E42]", label: "Likely true" },
+  mixed: { bar: "bg-[#F8E08E]", text: "text-[#041E42]", label: "Mixed or unclear evidence" },
+  unresolved: { bar: "bg-[#63666A]", text: "text-white", label: "Not enough evidence to verify" },
 };
 
 export function ClaimVerdictBanner({
@@ -289,7 +291,7 @@ export function ClaimVerdictBanner({
   const b = BANNER[verdict];
   return (
     <div className="rounded-lg overflow-hidden ring-1 ring-black/10 dark:ring-slate-700 mb-6">
-      <div className={`${b.bar} text-white text-center font-bold text-xl md:text-2xl py-4 px-4`}>
+      <div className={`${b.bar} ${b.text} text-center font-bold text-xl md:text-2xl py-4 px-4`}>
         Verdict: {b.label}
       </div>
       <div className="bg-slate-200 dark:bg-slate-800 text-[#041E42] dark:text-slate-200 px-5 py-3 text-sm md:text-base border-t border-black/10 dark:border-slate-700 flex items-center justify-between gap-3">
@@ -297,7 +299,7 @@ export function ClaimVerdictBanner({
           TrueMedia.org verdict: <strong>{b.label.toLowerCase()}</strong>.
         </span>
         {humanVerified && (
-          <span className="inline-flex items-center gap-1.5 text-sm text-[#0883a3] dark:text-[#33D6FF] shrink-0">
+          <span className="inline-flex items-center gap-1.5 text-sm text-[#003DA5] dark:text-[#5FC9EB] shrink-0">
             <HiOutlineCheckBadge className="w-5 h-5" />
             Verified by human analyst
           </span>
@@ -315,11 +317,11 @@ export function ClaimVerdictBanner({
 //     and shows a one-line consensus instead.
 // ─────────────────────────────────────────────────────────────────────
 
-const CHIP: Record<ClaimVerdict, { bg: string; label: string }> = {
-  "likely-false": { bg: "bg-[#E5341F]", label: "Likely false" },
-  "likely-true": { bg: "bg-emerald-600", label: "Likely true" },
-  unresolved: { bg: "bg-slate-500", label: "Unresolved" },
-  mixed: { bg: "bg-amber-500", label: "Mixed" },
+const CHIP: Record<ClaimVerdict, { bg: string; text: string; label: string }> = {
+  "likely-false": { bg: "bg-[#862633]", text: "text-white", label: "Likely false" },
+  "likely-true": { bg: "bg-[#64A70B]", text: "text-[#041E42]", label: "Likely true" },
+  unresolved: { bg: "bg-[#63666A]", text: "text-white", label: "Unresolved" },
+  mixed: { bg: "bg-[#F8E08E]", text: "text-[#041E42]", label: "Mixed" },
 };
 
 export function BehindTheVerdictPanel({
@@ -410,7 +412,7 @@ function DetectorRow({ model, done }: { model: FactCheckModel; done: boolean }) 
             not a confidence score. */}
         {done && (
           <span
-            className={`shrink-0 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded ${chip.bg}`}
+            className={`shrink-0 ${chip.text} text-[10px] font-semibold px-1.5 py-0.5 rounded ${chip.bg}`}
           >
             {chip.label}
           </span>
@@ -422,7 +424,7 @@ function DetectorRow({ model, done }: { model: FactCheckModel; done: boolean }) 
           Complete
         </span>
       ) : (
-        <span className="shrink-0 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-[#0883a3] dark:text-[#00B5E2]">
+        <span className="shrink-0 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-[#003DA5] dark:text-[#00B5E2]">
           <Spinner /> Running
         </span>
       )}

@@ -68,27 +68,27 @@ function GaugeSvg({ value }: { value: number }) {
           x1={CX - R}
           x2={CX + R}
         >
-          <stop offset="0%" stopColor="#22C55E" />
-          <stop offset="22%" stopColor="#84CC16" />
-          <stop offset="35%" stopColor="#94A3B8" />
-          <stop offset="58%" stopColor="#F59E0B" />
-          <stop offset="78%" stopColor="#EF4444" />
-          <stop offset="100%" stopColor="#991B1B" />
+          <stop offset="0%" stopColor="#64A70B" />
+          <stop offset="22%" stopColor="#94C063" />
+          <stop offset="35%" stopColor="#ADAEB0" />
+          <stop offset="58%" stopColor="#EFCB5F" />
+          <stop offset="78%" stopColor="#D50032" />
+          <stop offset="100%" stopColor="#862633" />
         </linearGradient>
         <linearGradient id="needle-gradient" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stopColor="#F8FAFC" />
-          <stop offset="100%" stopColor="#64748B" />
+          <stop offset="0%" stopColor="#EDEEEE" />
+          <stop offset="100%" stopColor="#8E9093" />
         </linearGradient>
         <radialGradient id="pivot-gradient">
-          <stop offset="0%" stopColor="#94A3B8" />
-          <stop offset="55%" stopColor="#334155" />
-          <stop offset="100%" stopColor="#020617" />
+          <stop offset="0%" stopColor="#ADAEB0" />
+          <stop offset="55%" stopColor="#63666A" />
+          <stop offset="100%" stopColor="#021124" />
         </radialGradient>
       </defs>
 
       <path
         d={`M ${CX - R} ${CY} A ${R} ${R} 0 0 1 ${CX + R} ${CY}`}
-        stroke="#0B1220"
+        stroke="#021124"
         strokeWidth="22"
         fill="none"
         strokeLinecap="round"
@@ -119,7 +119,7 @@ function GaugeSvg({ value }: { value: number }) {
         y={CY + 15}
         fontSize="9"
         fontFamily="ui-monospace, monospace"
-        fill="#64748B"
+        fill="#8E9093"
         textAnchor="middle"
       >
         0
@@ -129,7 +129,7 @@ function GaugeSvg({ value }: { value: number }) {
         y={CY + 15}
         fontSize="9"
         fontFamily="ui-monospace, monospace"
-        fill="#64748B"
+        fill="#8E9093"
         textAnchor="middle"
       >
         100
@@ -148,8 +148,8 @@ function GaugeSvg({ value }: { value: number }) {
       </g>
 
       <circle cx={CX} cy={CY} r="10" fill="url(#pivot-gradient)" />
-      <circle cx={CX} cy={CY} r="4" fill="#0F172A" />
-      <circle cx={CX} cy={CY} r="1.6" fill="#94A3B8" />
+      <circle cx={CX} cy={CY} r="4" fill="#041E42" />
+      <circle cx={CX} cy={CY} r="1.6" fill="#ADAEB0" />
     </svg>
   );
 }
@@ -197,36 +197,32 @@ function ConfidenceLadder({
         <span className={`text-xs font-semibold ${accent}`}>{band.label}</span>
       </div>
 
-      <div className="relative h-2 rounded-full overflow-hidden bg-slate-800">
-        {/* Band segments — subtle steps, boundaries aligned to verdict tiers */}
-        {LADDER_BANDS.map((b, i) => (
-          <div
-            key={b.label}
-            title={`${b.label} · ${b.from}–${b.to}`}
-            className={b === band ? "absolute inset-y-0 bg-slate-500/60" : "absolute inset-y-0 bg-slate-700/40"}
-            style={{
-              left: `${b.from}%`,
-              width: `calc(${b.to - b.from}% - 1px)`,
-              marginLeft: i === 0 ? 0 : 1,
-            }}
-          />
-        ))}
-        {/* Detector spread — real min–max of individual detector scores */}
+      {/* One clear scale: manipulation probability from 0 → 100. The severity
+          gradient is bright up to the ensemble score and dimmed beyond it. */}
+      <div className="relative h-2.5 rounded-full overflow-hidden ring-1 ring-white/10">
         <div
-          title={`Detector range ${lo}–${hi}`}
-          className="absolute inset-y-0 bg-white/20"
-          style={{ left: `${lo}%`, width: `${Math.max(hi - lo, 1)}%` }}
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(90deg,#64A70B,#94C063 22%,#F8E08E 45%,#EFCB5F 60%,#D50032 82%,#862633)",
+          }}
         />
+        {/* Dim everything past the ensemble score */}
+        <div className="absolute inset-y-0 right-0 bg-[#041E42]/75" style={{ left: `${value}%` }} />
         {/* Ensemble marker */}
-        <div
-          className="absolute inset-y-0 w-0.5 bg-white"
-          style={{ left: `calc(${value}% - 1px)` }}
-        />
+        <div className="absolute inset-y-0 w-0.5 bg-white" style={{ left: `calc(${value}% - 1px)` }} />
+      </div>
+      <div className="flex justify-between mt-1 text-[9px] text-slate-500">
+        <span>0 · no manipulation</span>
+        <span>100 · highly manipulated</span>
       </div>
 
-      <div className="flex justify-between mt-1 text-[9px] font-mono text-slate-500">
-        <span>Detector range {lo}–{hi}</span>
-        <span>Ensemble {value}</span>
+      {/* Note line — states plainly what the bar is derived from */}
+      <div className="mt-1.5 text-[10px] leading-snug text-slate-400">
+        Ensemble score{" "}
+        <span className="font-mono text-slate-200 tabular-nums">{value}</span>; the{" "}
+        {active.length} detectors ranged{" "}
+        <span className="font-mono text-slate-200 tabular-nums">{lo}–{hi}</span>.
       </div>
     </div>
   );
@@ -258,13 +254,6 @@ export function EnsembleGauge({
       />
 
       <div className="relative">
-        {/* Completion count — its own row so it can never collide with the sentence */}
-        <div className="flex justify-end mb-1">
-          <span className="text-[10px] text-slate-400 font-mono tabular-nums">
-            {activeCount}/{totalCount} complete
-          </span>
-        </div>
-
         {/* Verdict sentence — or loading banner — centered */}
         <div className="text-center mb-3 px-2">
           {isLoading ? (
@@ -286,7 +275,7 @@ export function EnsembleGauge({
           ) : (
             <div className="text-sm leading-tight">
               <span className="text-slate-300">TrueMedia.org verdict: </span>
-              <span className={`font-semibold ${s.pillText}`}>{s.label.toLowerCase()}</span>
+              <span className={`font-semibold ${s.onDark}`}>{s.label.toLowerCase()}</span>
               <span className="text-slate-300"> of manipulation</span>
             </div>
           )}
@@ -298,7 +287,7 @@ export function EnsembleGauge({
           <div className="shrink-0 w-[120px]">
             <GaugeSvg value={confidence} />
             <div className="flex flex-col items-center mt-0.5">
-              <div className={`text-xl font-semibold tracking-tight ${s.pillText} leading-none`}>
+              <div className={`text-xl font-semibold tracking-tight ${s.onDark} leading-none`}>
                 {confidence}%
               </div>
               <div className="text-[9px] uppercase tracking-[0.1em] text-slate-400 mt-1 text-center leading-tight">
@@ -310,7 +299,7 @@ export function EnsembleGauge({
           {/* Calibrated verbal scale + detector-spread band (hidden while loading) */}
           {!isLoading && (
             <div className="flex-1 min-w-0">
-              <ConfidenceLadder value={confidence} detectors={detectors} accent={s.pillText} />
+              <ConfidenceLadder value={confidence} detectors={detectors} accent={s.onDark} />
             </div>
           )}
         </div>
@@ -339,6 +328,12 @@ export function EnsembleGauge({
                 );
               })}
             </ul>
+            {/* Completion count sits at the foot of the Detectors list */}
+            <div className="mt-2.5 pt-2.5 border-t border-slate-800 text-right">
+              <span className="text-[10px] text-slate-400 font-mono tabular-nums">
+                {activeCount}/{totalCount} complete
+              </span>
+            </div>
           </div>
         )}
       </div>

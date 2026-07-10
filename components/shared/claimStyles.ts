@@ -1,20 +1,22 @@
 import type { ClaimVerdict } from "@/components/commercial/sampleData";
 
+// Georgetown tertiary palette: Green 369 / Red 202 / Yellow 1205 /
+// Georgetown Gray, with navy or white text (whichever clears AA).
 export const CLAIM_PILL: Record<ClaimVerdict, { label: string; classes: string }> = {
   "likely-true": {
     label: "Likely True",
-    classes: "bg-emerald-900/40 text-emerald-300 dark:bg-emerald-900/30",
+    classes: "bg-[#64A70B] text-[#041E42]",
   },
   "likely-false": {
     label: "Likely False",
-    classes: "bg-red-900/40 text-red-300 dark:bg-red-900/30",
+    classes: "bg-[#862633] text-white",
   },
   unresolved: {
     label: "Unresolved",
-    classes: "bg-slate-700/60 text-slate-300",
+    classes: "bg-[#63666A] text-white",
   },
   mixed: {
     label: "Mixed Evidence",
-    classes: "bg-amber-900/40 text-amber-300 dark:bg-amber-900/30",
+    classes: "bg-[#F8E08E] text-[#041E42]",
   },
 };
