@@ -36,14 +36,12 @@ type FooterLink = { label: string; href: string; external?: boolean };
 
 const PROJECT_LINKS: FooterLink[] = [
   { label: "Methodology", href: "#" },
-  { label: "Models & weights", href: "#" },
   { label: "Documentation", href: "#" },
   { label: "Changelog", href: "#" },
 ];
 
 const SOURCE_LINKS: FooterLink[] = [
   { label: "Source on GitHub", href: "#", external: true },
-  { label: "REST API", href: "#" },
   { label: "Contributing guide", href: "#" },
   { label: "Report an issue", href: "#", external: true },
 ];
@@ -77,6 +75,15 @@ export function Footer() {
               </span>
               .
             </p>
+            <a
+              href="https://www.truemedia.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[#00B5E2] hover:text-[#003DA5] dark:hover:text-[#5FC9EB] transition"
+            >
+              Learn more about TrueMedia
+              <HiOutlineArrowTopRightOnSquare className="w-3.5 h-3.5" />
+            </a>
             <div className="mt-4 flex items-center gap-2 flex-wrap">
               <Badge icon={<HiOutlineCodeBracket className="w-3.5 h-3.5" />}>
                 Open Source
@@ -99,7 +106,7 @@ export function Footer() {
 
           {/* Source links */}
           <FooterColumn
-            title="Source & API"
+            title="Source"
             icon={<HiOutlineCpuChip className="w-4 h-4" />}
             links={SOURCE_LINKS}
           />

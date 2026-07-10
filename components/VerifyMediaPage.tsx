@@ -229,26 +229,12 @@ export function VerifyMediaPage() {
                 </p>
               </div>
 
-              {/* Supported sources */}
-              <div className="mt-6">
-                <div className="text-[11px] uppercase tracking-wide text-slate-300 mb-3">
-                  Supported sources
-                </div>
-                <div className="flex flex-wrap gap-x-6 gap-y-4">
-                  {SOURCES.map((s) => (
-                    <div key={s.name} className="flex flex-col items-center text-center">
-                      <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#00B5E2] text-[#041E42]">
-                        <s.Icon className="w-4 h-4" />
-                      </span>
-                      <span className="text-[10px] text-slate-300 mt-1.5">{s.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <SupportedSources />
             </>
           )}
 
           {mainTab === "false" && (
+            <>
             <div className="bg-slate-200 dark:bg-slate-300 rounded-lg p-5 md:p-6">
               <div className="text-lg font-bold text-[#041E42] mb-3">
                 {falseSubTab === "url" ? "Add social media post" : "Enter text to check"}
@@ -315,6 +301,11 @@ export function VerifyMediaPage() {
                 ))}
               </div>
             </div>
+
+            {/* The False Content tab accepts a social post URL — social
+                platforms only (no Google Drive file upload here). */}
+            <SupportedSources sources={SOCIAL_SOURCES} />
+            </>
           )}
         </section>
         </div>
@@ -429,6 +420,32 @@ function TabButton({
       {icon}
       {children}
     </button>
+  );
+}
+
+// Social platforms only (no Google Drive) — used by the text/claim tab,
+// which takes a social post URL, not an uploaded file.
+const SOCIAL_SOURCES = SOURCES.filter((s) => s.name !== "Google Drive");
+
+// Supported platforms row. Defaults to the full list (AIGC box, which also
+// supports file upload from Drive); pass a narrower list where appropriate.
+function SupportedSources({ sources = SOURCES }: { sources?: typeof SOURCES }) {
+  return (
+    <div className="mt-6">
+      <div className="text-[11px] uppercase tracking-wide text-slate-300 mb-3">
+        Supported sources
+      </div>
+      <div className="flex flex-wrap gap-x-6 gap-y-4">
+        {sources.map((s) => (
+          <div key={s.name} className="flex flex-col items-center text-center">
+            <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#00B5E2] text-[#041E42]">
+              <s.Icon className="w-4 h-4" />
+            </span>
+            <span className="text-[10px] text-slate-300 mt-1.5">{s.name}</span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
