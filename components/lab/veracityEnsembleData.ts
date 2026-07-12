@@ -228,29 +228,11 @@ export const RESULTS_SUMMARY_BY_VERDICT: Record<_CV, string> = {
 /** Convenience for the current demo claim (Hurricane Helene → likely false). */
 export const RESULTS_SUMMARY = RESULTS_SUMMARY_BY_VERDICT["likely-false"];
 
-export const CLAIM_DISCLAIMER =
-  "Disclaimer: This tool uses AI-powered analysis and external sources. However, errors can occur.";
+// Standardized site-wide disclaimer — the claim page previously carried its
+// own variant ("This tool uses AI-powered analysis…"); the team chose one
+// wording for media and text alike.
+export { TM_DISCLAIMER as CLAIM_DISCLAIMER } from "@/components/shared/disclaimer";
 
-export const STANCE_META: Record<
-  EvidenceStance,
-  { label: string; pill: string; dot: string; lane: string }
-> = {
-  refutes: {
-    label: "Refutes the claim",
-    pill: "bg-red-900/40 text-red-300 dark:bg-red-900/30 ring-1 ring-red-500/30",
-    dot: "bg-red-400",
-    lane: "Refutes",
-  },
-  supports: {
-    label: "Supports the claim",
-    pill: "bg-emerald-900/40 text-emerald-300 dark:bg-emerald-900/30 ring-1 ring-emerald-500/30",
-    dot: "bg-emerald-400",
-    lane: "Supports",
-  },
-  context: {
-    label: "Adds context",
-    pill: "bg-amber-900/40 text-amber-300 dark:bg-amber-900/30 ring-1 ring-amber-500/30",
-    dot: "bg-amber-400",
-    lane: "Context",
-  },
-};
+// (STANCE_META removed — the stance-lane layout was retired in favor of the
+// single relevance-sorted evidence column. `stance` stays on the data for
+// when the team revisits grouping labels.)

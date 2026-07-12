@@ -7,13 +7,6 @@ import {
   type Verdict,
 } from "./verdict";
 
-export type CategoryRow = {
-  id: string;
-  name: string;
-  detectorCount: number;
-  verdict: Verdict;
-};
-
 type Props = {
   detectors: DetectorResult[];
   /** Individual detector list between the verdict sentence and the gauge. Default true. */
@@ -155,80 +148,6 @@ function GaugeSvg({ value }: { value: number }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Verbal confidence ladder — adapted from the Georgetown label-design
-// exploration (labels.myassin.georgetown.domains, Ideas 2 & 5): a
-// calibrated verbal scale for the score, plus an honest uncertainty band
-// showing the actual min–max spread of the individual detector scores.
-// Band boundaries align with the verdict tiers in verdict.ts so the two
-// verbal scales can never contradict each other.
-// ─────────────────────────────────────────────────────────────────────
-
-const LADDER_BANDS = [
-  { from: 0, to: 25, label: "Unlikely" },
-  { from: 25, to: 50, label: "Possible" },
-  { from: 50, to: 75, label: "Likely" },
-  { from: 75, to: 90, label: "Very likely" },
-  { from: 90, to: 100, label: "Virtually certain" },
-];
-
-function ConfidenceLadder({
-  value,
-  detectors,
-  accent,
-}: {
-  value: number;
-  detectors: DetectorResult[];
-  accent: string;
-}) {
-  const active = detectors.filter((d) => d.verdict !== "pending");
-  if (active.length === 0) return null;
-
-  const lo = Math.min(...active.map((d) => d.confidence));
-  const hi = Math.max(...active.map((d) => d.confidence));
-  const band =
-    LADDER_BANDS.find((b) => value < b.to) ?? LADDER_BANDS[LADDER_BANDS.length - 1];
-
-  return (
-    <div>
-      <div className="flex items-baseline justify-between mb-1.5">
-        <span className="text-[10px] uppercase tracking-wider text-slate-400">
-          Verbal confidence
-        </span>
-        <span className={`text-xs font-semibold ${accent}`}>{band.label}</span>
-      </div>
-
-      {/* One clear scale: manipulation probability from 0 → 100. The severity
-          gradient is bright up to the ensemble score and dimmed beyond it. */}
-      <div className="relative h-2.5 rounded-full overflow-hidden ring-1 ring-white/10">
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(90deg,#64A70B,#94C063 22%,#F8E08E 45%,#EFCB5F 60%,#D50032 82%,#862633)",
-          }}
-        />
-        {/* Dim everything past the ensemble score */}
-        <div className="absolute inset-y-0 right-0 bg-[#041E42]/75" style={{ left: `${value}%` }} />
-        {/* Ensemble marker */}
-        <div className="absolute inset-y-0 w-0.5 bg-white" style={{ left: `calc(${value}% - 1px)` }} />
-      </div>
-      <div className="flex justify-between mt-1 text-[9px] text-slate-500">
-        <span>0 · no manipulation</span>
-        <span>100 · highly manipulated</span>
-      </div>
-
-      {/* Note line — states plainly what the bar is derived from */}
-      <div className="mt-1.5 text-[10px] leading-snug text-slate-400">
-        Ensemble score{" "}
-        <span className="font-mono text-slate-200 tabular-nums">{value}</span>; the{" "}
-        {active.length} detectors ranged{" "}
-        <span className="font-mono text-slate-200 tabular-nums">{lo}–{hi}</span>.
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────
 // Main
 // ─────────────────────────────────────────────────────────────────────
 
@@ -281,10 +200,9 @@ export function EnsembleGauge({
           )}
         </div>
 
-        {/* Combined score — compact gauge with the verbal scale beside it,
-            sitting directly under the verdict line */}
-        <div className="border-t border-slate-700 pt-4 flex items-center gap-5">
-          <div className="shrink-0 w-[120px]">
+        {/* Combined score — the gauge alone, centered under the verdict line */}
+        <div className="border-t border-slate-700 pt-4">
+          <div className="mx-auto w-[140px]">
             <GaugeSvg value={confidence} />
             <div className="flex flex-col items-center mt-0.5">
               <div className={`text-xl font-semibold tracking-tight ${s.onDark} leading-none`}>
@@ -295,13 +213,6 @@ export function EnsembleGauge({
               </div>
             </div>
           </div>
-
-          {/* Calibrated verbal scale + detector-spread band (hidden while loading) */}
-          {!isLoading && (
-            <div className="flex-1 min-w-0">
-              <ConfidenceLadder value={confidence} detectors={detectors} accent={s.onDark} />
-            </div>
-          )}
         </div>
 
         {/* Detectors — condensed single-line rows under the gauge. The

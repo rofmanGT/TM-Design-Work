@@ -5,10 +5,8 @@ import {
   HiOutlineChatBubbleBottomCenterText,
   HiOutlineShare,
   HiOutlineArrowDownTray,
-  HiOutlineEllipsisHorizontal,
+  HiOutlineCheck,
   HiOutlineCheckCircle,
-  HiOutlineXCircle,
-  HiOutlineQuestionMarkCircle,
   HiOutlineArrowTopRightOnSquare,
   HiOutlineChevronDown,
   HiOutlineMagnifyingGlass,
@@ -18,7 +16,6 @@ import {
   HiOutlineCpuChip,
   HiOutlineCheckBadge,
 } from "react-icons/hi2";
-import { CLAIM_PILL } from "@/components/shared/claimStyles";
 import type { ClaimVerdict } from "@/components/commercial/sampleData";
 import {
   FACT_CHECK_MODELS,
@@ -82,28 +79,6 @@ export function useEnsembleSim(fresh: boolean) {
   return { phase, elapsed, doneModels, isModelDone, isLoading: phase !== "resolved" };
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// Shared chrome: breadcrumb + title row
-// ─────────────────────────────────────────────────────────────────────
-
-export function ClaimHeader() {
-  return (
-    <header className="flex items-center justify-end -mt-3 mb-4">
-      <div className="flex items-center gap-1">
-        <IconBtn label="Share">
-          <HiOutlineShare className="w-4 h-4" />
-        </IconBtn>
-        <IconBtn label="Export">
-          <HiOutlineArrowDownTray className="w-4 h-4" />
-        </IconBtn>
-        <IconBtn label="More">
-          <HiOutlineEllipsisHorizontal className="w-4 h-4" />
-        </IconBtn>
-      </div>
-    </header>
-  );
-}
-
 export function SubmittedTextPanel({
   text,
   isLoading,
@@ -113,6 +88,25 @@ export function SubmittedTextPanel({
   isLoading: boolean;
   phase: Phase;
 }) {
+  const [copied, setCopied] = useState(false);
+
+  // Share: native share sheet where available, else copy the permalink —
+  // same behavior as the media page's share action.
+  function shareClaim() {
+    if (typeof window === "undefined") return;
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator
+        .share({ title: "TrueMedia.org analysis", text: "TrueMedia.org text-claim analysis", url })
+        .catch(() => {});
+    } else {
+      navigator.clipboard?.writeText(url).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      });
+    }
+  }
+
   return (
     <section className="bg-[#041E42] dark:bg-slate-900 text-white rounded-lg p-5 ring-1 ring-transparent dark:ring-slate-800">
       <div className="flex items-center gap-2 mb-3">
@@ -133,6 +127,32 @@ export function SubmittedTextPanel({
           </span>
         </div>
       )}
+
+      {/* Share / export — bottom of the submitted-text box (moved from the
+          top-of-page row, which read like a second app header). */}
+      <div className="mt-5 pt-3 border-t border-slate-700 flex items-center justify-end gap-1">
+        <button
+          type="button"
+          onClick={shareClaim}
+          title={copied ? "Link copied" : "Share this analysis"}
+          aria-label="Share this analysis"
+          className="p-3.5 md:p-1.5 text-slate-300 hover:text-white hover:bg-slate-700/60 rounded transition"
+        >
+          {copied ? (
+            <HiOutlineCheck className="w-4 h-4 text-[#94C063]" />
+          ) : (
+            <HiOutlineShare className="w-4 h-4" />
+          )}
+        </button>
+        <button
+          type="button"
+          title="Export"
+          aria-label="Export"
+          className="p-3.5 md:p-1.5 text-slate-300 hover:text-white hover:bg-slate-700/60 rounded transition"
+        >
+          <HiOutlineArrowDownTray className="w-4 h-4" />
+        </button>
+      </div>
     </section>
   );
 }
@@ -194,7 +214,7 @@ export function EvidencePassageCard({ evidence }: { evidence: EnsembleEvidence }
       <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between gap-3 flex-wrap">
         <button
           onClick={() => setExpanded((v) => !v)}
-          className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white transition"
+          className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white transition min-h-[44px] md:min-h-0"
         >
           <HiOutlineChevronDown
             className={`w-3.5 h-3.5 transition-transform ${expanded ? "rotate-180" : ""}`}
@@ -433,54 +453,8 @@ function DetectorRow({ model, done }: { model: FactCheckModel; done: boolean }) 
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Verdict pill helper
-// ─────────────────────────────────────────────────────────────────────
-
-export function ClaimVerdictPill({
-  verdict,
-  size = "md",
-}: {
-  verdict: ClaimVerdict;
-  size?: "md" | "sm";
-}) {
-  const p = CLAIM_PILL[verdict];
-  const pad = size === "sm" ? "text-[11px] px-2 py-0.5" : "text-sm px-2.5 py-1";
-  return (
-    <span className={`inline-flex items-center gap-1.5 font-semibold rounded ${pad} ${p.classes}`}>
-      <VerdictIcon verdict={verdict} size={size} />
-      {p.label}
-    </span>
-  );
-}
-
-export function VerdictIcon({
-  verdict,
-  size = "md",
-}: {
-  verdict: ClaimVerdict;
-  size?: "md" | "sm";
-}) {
-  const cls = size === "sm" ? "w-3.5 h-3.5" : "w-4 h-4";
-  if (verdict === "likely-true") return <HiOutlineCheckCircle className={cls} />;
-  if (verdict === "likely-false") return <HiOutlineXCircle className={cls} />;
-  return <HiOutlineQuestionMarkCircle className={cls} />;
-}
-
-// ─────────────────────────────────────────────────────────────────────
 // Small shared primitives
 // ─────────────────────────────────────────────────────────────────────
-
-export function IconBtn({ children, label }: { children: React.ReactNode; label: string }) {
-  return (
-    <button
-      title={label}
-      aria-label={label}
-      className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-[#041E42] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition"
-    >
-      {children}
-    </button>
-  );
-}
 
 export function Spinner() {
   return (

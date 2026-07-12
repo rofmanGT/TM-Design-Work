@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   HiOutlineBars3,
-  HiOutlineShare,
   HiOutlineDocumentMagnifyingGlass,
   HiOutlineClock,
   HiOutlineBeaker,
@@ -17,6 +16,7 @@ import {
   HiOutlineSun,
   HiOutlineMoon,
   HiOutlineArrowTopRightOnSquare,
+  HiOutlineXMark,
 } from "react-icons/hi2";
 import { FaStar } from "react-icons/fa6";
 import { Footer } from "./Footer";
@@ -56,6 +56,8 @@ export function Chrome({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [dark, setDark] = useState(false);
   const [mounted, setMounted] = useState(false);
+  // Mobile-only slide-in nav drawer (the sidebar is hidden below md).
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -65,6 +67,14 @@ export function Chrome({ children }: { children: React.ReactNode }) {
     } catch {}
   }, []);
 
+  // Lock body scroll while the mobile drawer is open.
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
   function toggleSidebar() {
     setCollapsed((c) => {
       const next = !c;
@@ -73,6 +83,17 @@ export function Chrome({ children }: { children: React.ReactNode }) {
       } catch {}
       return next;
     });
+  }
+
+  // The header hamburger: on desktop it collapses the sidebar (unchanged
+  // behavior); below md — where the sidebar doesn't render — it opens the
+  // mobile drawer instead.
+  function handleHamburger() {
+    if (typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches) {
+      toggleSidebar();
+    } else {
+      setMobileOpen(true);
+    }
   }
 
   function toggleTheme() {
@@ -90,14 +111,20 @@ export function Chrome({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <Header onToggleSidebar={toggleSidebar} />
+      <Header onToggleSidebar={handleHamburger} />
       <Sidebar
         collapsed={mounted ? collapsed : false}
         onToggle={toggleSidebar}
         dark={dark}
         onToggleTheme={toggleTheme}
       />
-      <div className={`mt-20 transition-[margin-left] duration-200 ${sidebarMargin}`}>
+      <MobileDrawer
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        dark={dark}
+        onToggleTheme={toggleTheme}
+      />
+      <div className={`mt-20 print:!mt-0 print:!ml-0 transition-[margin-left] duration-200 ${sidebarMargin}`}>
         <div className="flex flex-col min-h-[calc(100vh-5rem)]">
           <div className="flex-1">{children}</div>
           <Footer />
@@ -112,12 +139,8 @@ export function Chrome({ children }: { children: React.ReactNode }) {
 // ─────────────────────────────────────────────────────────────────────
 
 function Header({ onToggleSidebar }: { onToggleSidebar: () => void }) {
-  // Share is a "share this result" affordance — it belongs on result pages,
-  // not the home/query page where there is nothing yet to share.
-  const pathname = usePathname() ?? "";
-  const showShare = pathname !== "/";
   return (
-    <header className="bg-[#041E42] fixed top-0 left-0 right-0 h-20 border-b border-slate-700 px-4 grid grid-cols-3 items-center z-50 text-white">
+    <header className="bg-[#041E42] fixed top-0 left-0 right-0 h-20 border-b border-slate-700 px-4 grid grid-cols-3 items-center z-50 text-white print:hidden">
       <div className="flex items-center">
         <button
           onClick={onToggleSidebar}
@@ -136,12 +159,8 @@ function Header({ onToggleSidebar }: { onToggleSidebar: () => void }) {
       </div>
 
       <div className="flex justify-end items-center gap-6 pr-4">
-        {showShare && (
-          <button className="flex items-center gap-2 hover:text-[#00B5E2] transition">
-            <HiOutlineShare className="w-5 h-5" />
-            <span className="text-sm">Share</span>
-          </button>
-        )}
+        {/* Header Share removed — result pages carry their own share action
+            beneath the verdict banner. */}
         <img
           src="/logos/georgetownlogo.png"
           alt="Georgetown University"
@@ -171,7 +190,7 @@ function Sidebar({
 
   return (
     <aside
-      className={`hidden md:flex flex-col fixed mt-20 top-0 left-0 bottom-0 bg-[#E2E2E2] dark:bg-slate-900 border-r border-slate-300 dark:border-slate-700 z-40 transition-[width] duration-200 py-2 px-1.5 ${
+      className={`hidden md:flex print:!hidden flex-col fixed mt-20 top-0 left-0 bottom-0 bg-[#E2E2E2] dark:bg-slate-900 border-r border-slate-300 dark:border-slate-700 z-40 transition-[width] duration-200 py-2 px-1.5 ${
         collapsed ? "w-16" : "w-64"
       }`}
     >
@@ -189,10 +208,46 @@ function Sidebar({
         )}
       </button>
 
+      <SidebarContent
+        collapsed={collapsed}
+        pathname={pathname}
+        dark={dark}
+        onToggleTheme={onToggleTheme}
+      />
+    </aside>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// SidebarContent — the nav itself, shared verbatim by the desktop sidebar
+// and the mobile drawer. `onNavigate` lets the drawer close on link tap.
+// ─────────────────────────────────────────────────────────────────────
+
+function SidebarContent({
+  collapsed,
+  pathname,
+  dark,
+  onToggleTheme,
+  onNavigate,
+}: {
+  collapsed: boolean;
+  pathname: string;
+  dark: boolean;
+  onToggleTheme: () => void;
+  onNavigate?: () => void;
+}) {
+  return (
+    <>
       {/* Primary nav */}
       <ul className="space-y-0.5">
         {NAV_PRIMARY.map((n) => (
-          <SidebarLink key={n.href} item={n} collapsed={collapsed} pathname={pathname} />
+          <SidebarLink
+            key={n.href}
+            item={n}
+            collapsed={collapsed}
+            pathname={pathname}
+            onNavigate={onNavigate}
+          />
         ))}
       </ul>
 
@@ -204,12 +259,18 @@ function Sidebar({
 
         <ul className="space-y-0.5">
           {NAV_FOOTER.map((n) => (
-            <SidebarLink key={n.label} item={n} collapsed={collapsed} pathname={pathname} />
+            <SidebarLink
+              key={n.label}
+              item={n}
+              collapsed={collapsed}
+              pathname={pathname}
+              onNavigate={onNavigate}
+            />
           ))}
         </ul>
 
         {/* User chip */}
-        <div className="mt-3 flex items-center gap-2 px-2.5 py-2 rounded-md hover:bg-white/60 dark:hover:bg-slate-700/60 transition cursor-pointer">
+        <div className="mt-3 flex items-center gap-2 px-2.5 py-2 min-h-[44px] md:min-h-0 rounded-md hover:bg-white/60 dark:hover:bg-slate-700/60 transition cursor-pointer">
           <div className="w-7 h-7 rounded-full bg-[#00B5E2] text-[#041E42] text-[10px] font-semibold flex items-center justify-center shrink-0">
             RO
           </div>
@@ -230,7 +291,85 @@ function Sidebar({
           © 2026 TrueMedia · Georgetown
         </div>
       </div>
-    </aside>
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// MobileDrawer — slide-in nav for < md, where the sidebar doesn't render.
+// Scrim + panel; closes on scrim tap, ✕, ESC, or any nav link.
+// ─────────────────────────────────────────────────────────────────────
+
+function MobileDrawer({
+  open,
+  onClose,
+  dark,
+  onToggleTheme,
+}: {
+  open: boolean;
+  onClose: () => void;
+  dark: boolean;
+  onToggleTheme: () => void;
+}) {
+  const pathname = usePathname() ?? "";
+
+  // Close on Escape while open.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  return (
+    <div
+      className={`md:hidden print:!hidden fixed inset-0 z-[60] ${open ? "" : "pointer-events-none"}`}
+      aria-hidden={!open}
+    >
+      {/* Scrim */}
+      <div
+        className={`absolute inset-0 bg-[#041E42]/60 transition-opacity duration-200 ${
+          open ? "opacity-100" : "opacity-0"
+        }`}
+        onClick={onClose}
+        aria-hidden
+      />
+
+      {/* Panel */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation"
+        className={`absolute left-0 top-0 bottom-0 w-72 max-w-[85vw] bg-[#E2E2E2] dark:bg-slate-900 shadow-2xl flex flex-col transition-transform duration-200 ease-out pt-[env(safe-area-inset-top)] ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Navy masthead — matches the app header so the white logo reads */}
+        <div className="flex items-center justify-between h-14 pl-4 pr-1.5 bg-[#041E42] text-white shrink-0">
+          <img src="/logos/truemedialogo.png" alt="TrueMedia" className="h-7 w-auto" />
+          <button
+            onClick={onClose}
+            aria-label="Close menu"
+            className="w-11 h-11 flex items-center justify-center rounded-md hover:bg-slate-700/60 transition"
+          >
+            <HiOutlineXMark className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Same nav content as the desktop sidebar, always expanded */}
+        <div className="flex-1 flex flex-col overflow-y-auto py-2 px-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          <SidebarContent
+            collapsed={false}
+            pathname={pathname}
+            dark={dark}
+            onToggleTheme={onToggleTheme}
+            onNavigate={onClose}
+          />
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -258,7 +397,7 @@ function ThemeToggle({
   return (
     <button
       onClick={onToggle}
-      className="flex items-center gap-3 w-full pl-2.5 pr-3 py-2 rounded-md text-[#041E42] dark:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-700/60 transition"
+      className="flex items-center gap-3 w-full pl-2.5 pr-3 py-2 min-h-[44px] md:min-h-0 rounded-md text-[#041E42] dark:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-700/60 transition"
     >
       {dark ? <HiOutlineSun className="w-5 h-5 shrink-0" /> : <HiOutlineMoon className="w-5 h-5 shrink-0" />}
       <span className="text-sm flex-1 text-left truncate">
@@ -282,10 +421,12 @@ function SidebarLink({
   item,
   collapsed,
   pathname,
+  onNavigate,
 }: {
   item: NavItem;
   collapsed: boolean;
   pathname: string;
+  onNavigate?: () => void;
 }) {
   const active = pathname === item.href;
   const isExternal = item.href.startsWith("http");
@@ -296,7 +437,8 @@ function SidebarLink({
         title={collapsed ? item.label : undefined}
         target={isExternal ? "_blank" : undefined}
         rel={isExternal ? "noopener noreferrer" : undefined}
-        className={`flex items-center gap-3 px-2.5 py-2 rounded-md transition relative ${
+        onClick={onNavigate}
+        className={`flex items-center gap-3 px-2.5 py-2 min-h-[44px] md:min-h-0 rounded-md transition relative ${
           active
             ? "bg-[#041E42] text-white dark:bg-[#00B5E2]/15 dark:text-white dark:ring-1 dark:ring-[#00B5E2]/30"
             : "text-[#041E42] dark:text-slate-300 hover:bg-white/60 dark:hover:bg-slate-800/80"

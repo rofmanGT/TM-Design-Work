@@ -148,18 +148,18 @@ export function VerifyMediaPage() {
                       e.preventDefault();
                       goAnalyzeUrl();
                     }}
-                    className="flex gap-3"
+                    className="flex flex-col sm:flex-row gap-3"
                   >
                     <input
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
                       type="text"
                       placeholder="Add a URL…"
-                      className="flex-1 bg-slate-700 border border-slate-600 text-white placeholder-slate-400 text-base rounded-lg px-4 py-3 focus:outline-none focus:border-[#00B5E2] focus:ring-1 focus:ring-[#00B5E2]"
+                      className="flex-1 min-w-0 bg-slate-700 border border-slate-600 text-white placeholder-slate-400 text-base rounded-lg px-4 py-3 focus:outline-none focus:border-[#00B5E2] focus:ring-1 focus:ring-[#00B5E2]"
                     />
                     <button
                       type="submit"
-                      className="bg-[#00B5E2] hover:bg-[#0099C2] text-[#041E42] font-semibold text-base px-6 rounded-lg flex items-center gap-2 transition shrink-0"
+                      className="bg-[#00B5E2] hover:bg-[#0099C2] text-[#041E42] font-semibold text-base px-6 py-3 sm:py-0 rounded-lg flex items-center justify-center gap-2 transition shrink-0"
                     >
                       Analyze
                       <HiOutlinePaperAirplane className="w-4 h-4" />
@@ -207,7 +207,7 @@ export function VerifyMediaPage() {
                     <button
                       key={t}
                       onClick={() => setAiSubTab(t)}
-                      className={`px-4 py-2 rounded-md text-sm font-medium transition ${
+                      className={`px-4 py-2 min-h-[44px] md:min-h-0 rounded-md text-sm font-medium transition ${
                         aiSubTab === t
                           ? "bg-slate-600 text-white"
                           : "text-slate-300 hover:text-white"
@@ -246,18 +246,18 @@ export function VerifyMediaPage() {
                     e.preventDefault();
                     goAnalyzeText();
                   }}
-                  className="flex gap-3"
+                  className="flex flex-col sm:flex-row gap-3"
                 >
                   <input
                     value={claimUrl}
                     onChange={(e) => setClaimUrl(e.target.value)}
                     type="text"
                     placeholder="Add a URL…"
-                    className="flex-1 bg-slate-700 border border-slate-600 text-white placeholder-slate-400 text-base rounded-lg px-4 py-3 focus:outline-none focus:border-[#00B5E2] focus:ring-1 focus:ring-[#00B5E2]"
+                    className="flex-1 min-w-0 bg-slate-700 border border-slate-600 text-white placeholder-slate-400 text-base rounded-lg px-4 py-3 focus:outline-none focus:border-[#00B5E2] focus:ring-1 focus:ring-[#00B5E2]"
                   />
                   <button
                     type="submit"
-                    className="bg-[#00B5E2] hover:bg-[#0099C2] text-[#041E42] font-semibold text-base px-6 rounded-lg flex items-center gap-2 transition shrink-0"
+                    className="bg-[#00B5E2] hover:bg-[#0099C2] text-[#041E42] font-semibold text-base px-6 py-3 sm:py-0 rounded-lg flex items-center justify-center gap-2 transition shrink-0"
                   >
                     Analyze
                     <HiOutlinePaperAirplane className="w-4 h-4" />
@@ -290,7 +290,7 @@ export function VerifyMediaPage() {
                   <button
                     key={t}
                     onClick={() => setFalseSubTab(t)}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition ${
+                    className={`px-4 py-2 min-h-[44px] md:min-h-0 rounded-md text-sm font-medium transition ${
                       falseSubTab === t
                         ? "bg-slate-600 text-white"
                         : "text-slate-300 hover:text-white"
@@ -316,7 +316,7 @@ export function VerifyMediaPage() {
             <h2 className="text-2xl font-bold">History</h2>
             <a
               href={mainTab === "false" ? "/media/history?tab=claims" : "/media/history"}
-              className="text-sm text-[#041E42] dark:text-slate-300 hover:text-[#00B5E2] inline-flex items-center gap-1"
+              className="text-sm text-[#041E42] dark:text-slate-300 hover:text-[#00B5E2] inline-flex items-center gap-1 py-3 -my-3 px-2 -mx-2"
             >
               See all <HiOutlineArrowRight className="w-4 h-4" />
             </a>
@@ -640,7 +640,7 @@ function NotableCard({ c }: { c: RealCase }) {
         {/* "More" opens the TrueMedia verdict page, not the external source */}
         <a
           href="/media/analysis"
-          className="inline-flex items-center gap-1 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-transparent text-sm text-[#041E42] dark:text-slate-200 px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition shrink-0"
+          className="inline-flex items-center gap-1 min-h-[44px] md:min-h-0 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-transparent text-sm text-[#041E42] dark:text-slate-200 px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition shrink-0"
         >
           More <HiOutlineArrowRight className="w-4 h-4" />
         </a>

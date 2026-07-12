@@ -2,7 +2,7 @@ export { ConfidenceBar } from "./ConfidenceBar";
 export { VerdictBadge } from "./VerdictBadge";
 export { DetectorCard } from "./DetectorCard";
 export { EnsembleVerdict } from "./EnsembleVerdict";
-export { EnsembleGauge, type CategoryRow } from "./EnsembleGauge";
+export { EnsembleGauge } from "./EnsembleGauge";
 export {
   VERDICT_STYLES,
   ensembleConfidence,

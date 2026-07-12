@@ -207,7 +207,7 @@ function FilterRow<T extends string>({
             <button
               key={o.v}
               onClick={() => onChange(o.v)}
-              className={`text-xs px-3 py-1 rounded-sm transition border ${
+              className={`inline-flex items-center text-xs px-3 py-1 min-h-[44px] md:min-h-0 rounded-sm transition border ${
                 active
                   ? "bg-[#041E42] text-white border-[#041E42] dark:bg-[#00B5E2]/15 dark:border-[#00B5E2]/40 dark:text-white"
                   : "bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-slate-500 dark:hover:border-slate-500"
@@ -313,7 +313,7 @@ function CaseCard({ c, index }: { c: RealCase; index: number }) {
           <CiteButton c={c} caseId={caseId} />
           <a
             href="/media/analysis"
-            className="text-xs text-[#00B5E2] hover:text-[#003DA5] dark:hover:text-[#5FC9EB] inline-flex items-center gap-1 font-medium"
+            className="text-xs text-[#00B5E2] hover:text-[#003DA5] dark:hover:text-[#5FC9EB] inline-flex items-center gap-1 font-medium min-h-[44px] md:min-h-0"
           >
             TrueMedia verdict
             <HiOutlineArrowRight className="w-3 h-3" />
@@ -335,7 +335,7 @@ function CiteButton({ c, caseId }: { c: RealCase; caseId: string }) {
   function copyCitation() {
     const citation = `TrueMedia (Georgetown University). "${c.title}." Notable Cases Archive, ${caseId}.${
       c.citationUrl ? ` Documented at ${c.citationUrl}.` : ""
-    } https://www.truemedia.org/media/notable`;
+    } https://truemedia.georgetown.edu/media/notable`;
     navigator.clipboard?.writeText(citation).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -346,7 +346,7 @@ function CiteButton({ c, caseId }: { c: RealCase; caseId: string }) {
     <button
       onClick={copyCitation}
       title="Copy a formatted citation for this case"
-      className="text-xs inline-flex items-center gap-1 border border-slate-300 dark:border-slate-700 hover:border-[#00B5E2] dark:hover:border-[#00B5E2] rounded-sm px-2 py-1 transition text-slate-600 dark:text-slate-300"
+      className="text-xs inline-flex items-center gap-1 min-h-[44px] md:min-h-0 border border-slate-300 dark:border-slate-700 hover:border-[#00B5E2] dark:hover:border-[#00B5E2] rounded-sm px-2 py-1 transition text-slate-600 dark:text-slate-300"
     >
       {copied ? (
         <>

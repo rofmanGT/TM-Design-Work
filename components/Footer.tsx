@@ -28,7 +28,7 @@ const BIBTEX = `@misc{truemedia2026,
   title        = {TrueMedia: Open-Source Deepfake Detection},
   author       = {{Georgetown University}},
   year         = {2026},
-  howpublished = {\\url{https://www.truemedia.org}},
+  howpublished = {\\url{https://truemedia.georgetown.edu}},
   note         = {Ensemble detection platform, ${BUILD_VERSION}}
 }`;
 
@@ -57,7 +57,7 @@ export function Footer() {
   }
 
   return (
-    <footer className="border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[#041E42] dark:text-slate-300">
+    <footer className="border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[#041E42] dark:text-slate-300 print:hidden">
       <div className="max-w-7xl mx-auto px-5 md:px-8 py-10">
         <div className="grid grid-cols-2 lg:grid-cols-12 gap-8">
           {/* Brand + attribution */}
@@ -119,7 +119,7 @@ export function Footer() {
             </h3>
             <button
               onClick={copyCitation}
-              className="w-full inline-flex items-center justify-center gap-1.5 text-xs font-medium border border-slate-300 dark:border-slate-700 hover:border-[#00B5E2] dark:hover:border-[#00B5E2] rounded-md px-3 py-2 transition text-[#041E42] dark:text-slate-200"
+              className="w-full inline-flex items-center justify-center gap-1.5 text-xs font-medium min-h-[44px] md:min-h-0 border border-slate-300 dark:border-slate-700 hover:border-[#00B5E2] dark:hover:border-[#00B5E2] rounded-md px-3 py-2 transition text-[#041E42] dark:text-slate-200"
             >
               {copied ? (
                 <>
@@ -176,7 +176,7 @@ function FooterColumn({
               href={l.href}
               target={l.external ? "_blank" : undefined}
               rel={l.external ? "noopener noreferrer" : undefined}
-              className="inline-flex items-center gap-1 text-sm text-slate-600 dark:text-slate-400 hover:text-[#00B5E2] dark:hover:text-[#00B5E2] transition"
+              className="inline-flex items-center gap-1 text-sm text-slate-600 dark:text-slate-400 hover:text-[#00B5E2] dark:hover:text-[#00B5E2] transition py-1.5 -my-1.5"
             >
               {l.label}
               {l.external && (

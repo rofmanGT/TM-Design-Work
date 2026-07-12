@@ -198,7 +198,7 @@ export function HistoryPage() {
                   onChange={(e) => setSearch(e.target.value)}
                   type="text"
                   placeholder="Search"
-                  className="w-full bg-slate-800 border border-slate-700 text-white placeholder-slate-500 text-sm rounded-md pl-9 pr-3 py-2.5 focus:outline-none focus:border-[#00B5E2] focus:ring-1 focus:ring-[#00B5E2]"
+                  className="w-full bg-slate-800 border border-slate-700 text-white placeholder-slate-500 text-base md:text-sm rounded-md pl-9 pr-3 py-2.5 focus:outline-none focus:border-[#00B5E2] focus:ring-1 focus:ring-[#00B5E2]"
                 />
               </div>
               <button
@@ -365,7 +365,7 @@ function DropdownButton<T extends string>({
     <div className="relative">
       <button
         type="button"
-        className="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white text-sm rounded-md px-4 py-2.5 transition"
+        className="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white text-sm rounded-md px-4 py-2.5 min-h-[44px] md:min-h-0 transition"
       >
         {label}
         <HiOutlineChevronDown className="w-3.5 h-3.5" />

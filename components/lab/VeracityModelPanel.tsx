@@ -9,7 +9,6 @@ import {
 } from "./veracityEnsembleData";
 import {
   useEnsembleSim,
-  ClaimHeader,
   ClaimVerdictBanner,
   SubmittedTextPanel,
   BehindTheVerdictPanel,
@@ -33,10 +32,7 @@ export function VeracityModelPanel({ text, fresh }: { text: string; fresh: boole
     <main className="min-h-screen bg-white dark:bg-slate-950 text-[#041E42] dark:text-slate-100 p-5 md:p-8">
       <ClaimVerdictBanner verdict={agg.verdict} isLoading={isLoading} />
 
-      {/* Share / export actions sit under the verdict banner */}
-      <ClaimHeader />
-
-      {/* Hero */}
+      {/* Hero — share/export actions live at the bottom of the text box */}
       <div className="grid md:grid-cols-2 gap-5">
         <SubmittedTextPanel text={text} isLoading={isLoading} phase={phase} />
         <BehindTheVerdictPanel

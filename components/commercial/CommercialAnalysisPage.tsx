@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
-  HiOutlineSparkles,
   HiOutlinePhoto,
   HiOutlineInformationCircle,
   HiOutlineArrowUpTray,
@@ -15,13 +14,9 @@ import {
   HiOutlineLink,
   HiOutlineCheck,
   HiOutlineChevronRight,
-  HiOutlineFingerPrint,
   HiOutlineFaceSmile,
-  HiOutlineChartBarSquare,
-  HiOutlineFilm,
   HiOutlineMicrophone,
   HiOutlineMusicalNote,
-  HiOutlineChatBubbleBottomCenterText,
 } from "react-icons/hi2";
 import {
   EnsembleGauge,
@@ -32,7 +27,8 @@ import {
   type Verdict,
   type DetectorResult,
 } from "@/components/ensemble";
-import { REAL_DETECTORS } from "@/components/real/realData";
+import { REAL_DETECTORS, REAL_VERDICTS } from "@/components/real/realData";
+import { TM_DISCLAIMER } from "@/components/shared/disclaimer";
 
 // ─────────────────────────────────────────────────────────────────────
 // REAL detector roster for a video-with-audio case. Names, descriptions,
@@ -146,9 +142,10 @@ const SHARED_DETAILS = {
   calibrated: "Mar 2026",
 };
 
+// Video is deliberately not offered yet — this version doesn't process
+// video (see the home-page note); the view data stays defined for later.
 const MEDIA_TABS: { kind: MediaKind; label: string; Icon: React.ComponentType<{ className?: string }> }[] = [
   { kind: "image", label: "Image", Icon: HiOutlinePhoto },
-  { kind: "video", label: "Video", Icon: HiOutlineFilm },
   { kind: "audio", label: "Audio", Icon: HiOutlineMusicalNote },
 ];
 
@@ -192,9 +189,10 @@ export function CommercialAnalysisPage() {
   const fresh = search.get("fresh") === "1";
 
   // Media-type preview toggle (demo affordance; defaults to the ?type= param).
+  // Video isn't offered in this version, so anything else lands on image.
   const urlType = search.get("type");
   const [mediaView, setMediaView] = useState<MediaKind>(
-    urlType === "image" || urlType === "audio" ? urlType : "video"
+    urlType === "audio" ? "audio" : "image"
   );
   const view = MEDIA_VIEWS[mediaView];
   const { map: freshTiming, total: freshTotalMs } = useMemo(
@@ -253,17 +251,17 @@ export function CommercialAnalysisPage() {
     : VERDICT_STYLES[peakVerdict].label + " of Manipulation";
 
   return (
-    <main className="bg-white dark:bg-slate-950 text-[#041E42] dark:text-slate-100 min-h-screen p-5 md:p-8">
+    <main className="bg-white dark:bg-slate-950 text-[#041E42] dark:text-slate-100 min-h-screen p-5 md:p-8 print:!p-0 print:min-h-0">
       {/* Breadcrumbs + media-type preview toggle */}
-      <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+      <div className="flex items-center justify-between gap-3 mb-3 flex-wrap print:hidden">
         <nav className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-          <a href="/" className="hover:text-[#041E42] dark:hover:text-slate-100">
+          <a href="/" className="hover:text-[#041E42] dark:hover:text-slate-100 py-2.5 -my-2.5">
             Verify Media
           </a>
           <HiOutlineChevronRight className="w-3 h-3" />
           <a
             href="/media/history"
-            className="hover:text-[#041E42] dark:hover:text-slate-100"
+            className="hover:text-[#041E42] dark:hover:text-slate-100 py-2.5 -my-2.5"
           >
             Analyses
           </a>
@@ -282,7 +280,7 @@ export function CommercialAnalysisPage() {
               <button
                 key={t.kind}
                 onClick={() => setMediaView(t.kind)}
-                className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded transition ${
+                className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 min-h-[44px] md:min-h-0 rounded transition ${
                   mediaView === t.kind
                     ? "bg-[#041E42] text-white dark:bg-[#00B5E2] dark:text-[#041E42]"
                     : "text-slate-600 dark:text-slate-300 hover:text-[#041E42] dark:hover:text-white"
@@ -296,7 +294,7 @@ export function CommercialAnalysisPage() {
         </div>
       </div>
 
-      <section className="bg-[#041E42] dark:bg-slate-900 text-white p-5 rounded-lg ring-1 ring-transparent dark:ring-slate-800">
+      <section className="bg-[#041E42] dark:bg-slate-900 text-white p-5 rounded-lg ring-1 ring-transparent dark:ring-slate-800 print:hidden">
               <div className="mb-5">
                 <h1 className="text-3xl font-bold tracking-tight leading-none">Is this Real?</h1>
               </div>
@@ -336,7 +334,11 @@ export function CommercialAnalysisPage() {
                     </div>
                   </div>
 
-                  <dl className="bg-slate-800/50 rounded-md px-3 py-2.5 text-xs grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5">
+                  {/* Analyzed date + case ID intentionally omitted here for
+                      parity with the text page (they remain in Details and
+                      the printed report). Solid lifted navy — the old
+                      half-transparent slate read slightly off on this card. */}
+                  <dl className="bg-[#0A2348] rounded-md px-3 py-2.5 text-xs grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5">
                     <dt className="text-slate-400">Source</dt>
                     <dd className="text-white">
                       {view.source.platform}
@@ -350,15 +352,6 @@ export function CommercialAnalysisPage() {
                     <dd className="text-white font-mono">
                       {view.fileType} · {view.fileSize}
                     </dd>
-                    <dt className="text-slate-400">Analyzed</dt>
-                    <dd className="text-white">
-                      {SHARED_DETAILS.analyzedOn}{" "}
-                      <span className="text-slate-400 font-mono">
-                        · {SHARED_DETAILS.processingTime}
-                      </span>
-                    </dd>
-                    <dt className="text-slate-400">Case ID</dt>
-                    <dd className="text-white font-mono">{view.caseId}</dd>
                   </dl>
                 </div>
 
@@ -369,10 +362,7 @@ export function CommercialAnalysisPage() {
                     detectors={liveDetectors}
                     loadingPhase={loadingPhase}
                   />
-                  <p className="text-slate-400 text-xs leading-relaxed">
-                    Disclaimer: TrueMedia.org uses state-of-the-art academic AI methods. However,
-                    errors can occur. Results are not legal proof of manipulation.
-                  </p>
+                  <p className="text-slate-400 text-xs leading-relaxed">{TM_DISCLAIMER}</p>
                   <a
                     href="#"
                     className="text-xs text-[#00B5E2] hover:underline self-start"
@@ -384,7 +374,7 @@ export function CommercialAnalysisPage() {
             </section>
 
       {/* DETECTORS — the two in-house models that run for this media stream */}
-      <section className="mt-10">
+      <section className="mt-10 print:hidden">
         <div className="pb-2.5 mb-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2">
           <h2 className="text-base font-semibold tracking-tight text-[#041E42] dark:text-slate-100">
             Detectors
@@ -409,7 +399,7 @@ export function CommercialAnalysisPage() {
       </section>
 
       {/* DETAILS — always its own row below the categories */}
-      <section className="mt-10">
+      <section className="mt-10 print:hidden">
         <div className="flex items-center gap-2 text-lg font-bold text-[#041E42] dark:text-slate-100 mb-3">
           <HiOutlineInformationCircle className="w-5 h-5" />
           Details
@@ -446,6 +436,9 @@ export function CommercialAnalysisPage() {
         </div>
       </section>
 
+      {/* The downloadable asset — hidden on screen, this is what the
+          Download button's print-to-PDF actually renders. */}
+      <PrintReport view={view} />
     </main>
   );
 }
@@ -465,7 +458,7 @@ function IconButton({
       onClick={onClick}
       title={label}
       aria-label={label}
-      className="p-1.5 text-slate-300 hover:text-white hover:bg-slate-700/60 rounded transition"
+      className="p-3.5 md:p-1.5 text-slate-300 hover:text-white hover:bg-slate-700/60 rounded transition"
     >
       {children}
     </button>
@@ -487,7 +480,7 @@ function CopyLinkButton() {
           setTimeout(() => setCopied(false), 1500);
         });
       }}
-      className="p-1.5 text-slate-300 hover:text-white hover:bg-slate-700/60 rounded transition"
+      className="p-3.5 md:p-1.5 text-slate-300 hover:text-white hover:bg-slate-700/60 rounded transition"
     >
       {copied ? (
         <HiOutlineCheck className="w-4 h-4 text-[#94C063]" />
@@ -495,6 +488,286 @@ function CopyLinkButton() {
         <HiOutlineLink className="w-4 h-4" />
       )}
     </button>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// PrintReport — the downloadable asset. Hidden on screen; when Download
+// triggers window.print(), the interactive UI above is print:hidden and
+// this compact, light, one-page Georgetown-branded report is the PDF.
+// Always renders the RESOLVED result (view.detectors), never mid-load
+// pending states. Colors are explicit light-theme hexes so dark mode on
+// screen can't leak into the printed page.
+// ─────────────────────────────────────────────────────────────────────
+
+// Verdict hues for print: chip background + readable heading-text shade.
+const PRINT_ACCENT: Record<Verdict, { chipBg: string; chipText: string; heading: string }> = {
+  "substantial-evidence": { chipBg: "#862633", chipText: "#FFFFFF", heading: "#862633" },
+  "some-evidence": { chipBg: "#F8E08E", chipText: "#041E42", heading: "#BE922B" },
+  "little-evidence": { chipBg: "#64A70B", chipText: "#041E42", heading: "#548A09" },
+  uncertain: { chipBg: "#63666A", chipText: "#FFFFFF", heading: "#63666A" },
+  pending: { chipBg: "#8E9093", chipText: "#FFFFFF", heading: "#63666A" },
+};
+
+function PrintVerdictChip({ verdict }: { verdict: Verdict }) {
+  const a = PRINT_ACCENT[verdict];
+  return (
+    <span
+      className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded whitespace-nowrap"
+      style={{ background: a.chipBg, color: a.chipText }}
+    >
+      {VERDICT_STYLES[verdict].label}
+    </span>
+  );
+}
+
+function PrintReport({ view }: { view: AnalysisView }) {
+  const agg = ensembleConfidence(view.detectors);
+  const accent = PRINT_ACCENT[agg.verdict];
+  const scores = view.detectors.map((d) => d.confidence);
+  const lo = Math.min(...scores);
+  const hi = Math.max(...scores);
+
+  return (
+    <section
+      className="hidden print:block text-[#041E42]"
+      style={{ printColorAdjust: "exact", WebkitPrintColorAdjust: "exact" }}
+    >
+      {/* ── Page 1 · Result summary ─────────────────────────────────── */}
+      <div className="break-after-page">
+      {/* Masthead */}
+      <div className="flex items-end justify-between border-b-2 border-[#041E42] pb-3">
+        <div>
+          <div className="text-2xl font-bold tracking-tight leading-none">TrueMedia</div>
+          <div className="text-[11px] text-[#63666A] mt-1.5">
+            Media Analysis Report · An open-source research project of Georgetown University
+          </div>
+        </div>
+        <div className="text-right text-[11px] text-[#63666A]">
+          <div className="font-mono text-[#041E42]">{view.caseId}</div>
+          <div>{SHARED_DETAILS.analyzedOn}</div>
+        </div>
+      </div>
+
+      {/* Verdict */}
+      <div
+        className="mt-5 rounded-md border-2 px-4 py-3 flex items-baseline justify-between gap-4"
+        style={{ borderColor: accent.heading }}
+      >
+        <div className="text-lg font-bold" style={{ color: accent.heading }}>
+          {VERDICT_STYLES[agg.verdict].label} of Manipulation
+        </div>
+        <div className="text-lg font-bold whitespace-nowrap">
+          {agg.confidence}%
+          <span className="text-[10px] font-normal text-[#63666A] ml-1.5 uppercase tracking-wide">
+            manipulation probability
+          </span>
+        </div>
+      </div>
+
+      {/* Media thumbnail + metadata */}
+      <div className="mt-5 flex gap-5 items-start">
+        <img
+          src={view.heroImage}
+          alt=""
+          className={`w-52 aspect-video rounded border border-[#BCBDC0] ${
+            view.heroContain ? "object-contain p-1.5 bg-white" : "object-cover"
+          }`}
+        />
+        <dl className="flex-1 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-xs content-start">
+          <dt className="text-[#63666A] uppercase tracking-wide text-[10px] pt-0.5">File</dt>
+          <dd className="font-mono">{view.fileName} · {view.fileType} · {view.fileSize}</dd>
+          <dt className="text-[#63666A] uppercase tracking-wide text-[10px] pt-0.5">Source</dt>
+          <dd>
+            {view.source.platform}
+            <span className="font-mono text-[#63666A] ml-1.5">{view.source.url}</span>
+          </dd>
+          <dt className="text-[#63666A] uppercase tracking-wide text-[10px] pt-0.5">Analyzed</dt>
+          <dd>{SHARED_DETAILS.analyzedOn} · {SHARED_DETAILS.processingTime}</dd>
+          <dt className="text-[#63666A] uppercase tracking-wide text-[10px] pt-0.5">Ensemble</dt>
+          <dd className="font-mono">
+            {SHARED_DETAILS.ensembleVersion} · calibrated {SHARED_DETAILS.calibrated}
+          </dd>
+          <dt className="text-[#63666A] uppercase tracking-wide text-[10px] pt-0.5">Consensus</dt>
+          <dd>
+            {agg.agreeingCount} of {agg.activeCount} detectors agree · detector range {lo}–{hi}
+          </dd>
+        </dl>
+      </div>
+
+      {/* Detector table */}
+      <table className="w-full mt-5 text-xs border-t-2 border-[#041E42]">
+        <thead>
+          <tr className="text-left text-[10px] uppercase tracking-wide text-[#63666A] border-b border-[#BCBDC0]">
+            <th className="py-1.5 pr-3 font-semibold">Detector</th>
+            <th className="py-1.5 pr-3 font-semibold">Model</th>
+            <th className="py-1.5 text-right font-semibold">Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          {view.detectors.map((d, i) => {
+            const dv = d.verdict ?? verdictFromConfidence(d.confidence);
+            return (
+              <tr key={`${i}-${d.name}`} className="border-b border-[#DDDDDF] align-top">
+                <td className="py-2 pr-3">
+                  <div className="font-semibold">{d.name}</div>
+                  {d.description && (
+                    <div className="text-[10px] text-[#63666A] leading-snug mt-0.5 max-w-md">
+                      {d.description}
+                    </div>
+                  )}
+                </td>
+                <td className="py-2 pr-3 font-mono text-[10px] text-[#63666A] whitespace-nowrap">
+                  {d.tag}
+                </td>
+                <td className="py-2 text-right">
+                  <PrintVerdictChip verdict={dv} />
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      {/* Disclaimer + footer */}
+      <p className="mt-4 text-[10px] leading-relaxed text-[#63666A]">{TM_DISCLAIMER}</p>
+      <PrintPageFooter page={1} caseId={view.caseId} />
+      </div>
+
+      {/* ── Page 2 · Interpretation & methodology ────────────────────── */}
+      <div>
+        <div className="flex items-baseline justify-between border-b-2 border-[#041E42] pb-2">
+          <div className="text-sm font-bold tracking-tight">
+            TrueMedia{" "}
+            <span className="font-normal text-[#63666A]">
+              · Media Analysis Report — Interpretation
+            </span>
+          </div>
+          <div className="text-[10px] font-mono text-[#63666A]">{view.caseId}</div>
+        </div>
+
+        {/* Verdict tier legend */}
+        <h3 className="mt-5 text-[11px] font-semibold uppercase tracking-wide text-[#63666A]">
+          Verdict tiers
+        </h3>
+        <table className="w-full mt-2 text-xs break-inside-avoid">
+          <tbody>
+            {TIER_LEGEND.map((t) => (
+              <tr key={t.verdict} className="border-b border-[#DDDDDF]">
+                <td className="py-2 w-40">
+                  <PrintVerdictChip verdict={t.verdict} />
+                </td>
+                <td className="py-2 w-24 font-mono text-[10px] text-[#63666A] whitespace-nowrap">
+                  {t.range}
+                </td>
+                <td className="py-2">{t.meaning}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* Verbal confidence scale with this analysis marked */}
+        <h3 className="mt-6 text-[11px] font-semibold uppercase tracking-wide text-[#63666A]">
+          Verbal confidence scale
+        </h3>
+        <div className="mt-2 flex rounded overflow-hidden border border-[#BCBDC0] text-center break-inside-avoid">
+          {PRINT_BANDS.map((b) => {
+            const active =
+              agg.confidence >= b.from && (b.to === 100 ? agg.confidence <= 100 : agg.confidence < b.to);
+            return (
+              <div
+                key={b.label}
+                className="py-2 border-r last:border-r-0 border-[#BCBDC0]"
+                style={{
+                  width: `${b.to - b.from}%`,
+                  background: active ? accent.chipBg : "#F7F7F7",
+                  color: active ? accent.chipText : "#63666A",
+                }}
+              >
+                <div className="text-[9px] font-semibold leading-tight">{b.label}</div>
+                <div className="text-[8px] opacity-80">
+                  {b.from}–{b.to}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <p className="mt-1.5 text-[10px] text-[#63666A]">
+          This analysis: manipulation probability{" "}
+          <span className="font-mono text-[#041E42]">{agg.confidence}</span> →{" "}
+          <span className="font-semibold text-[#041E42]">
+            {(PRINT_BANDS.find(
+              (b) => agg.confidence >= b.from && (b.to === 100 ? true : agg.confidence < b.to)
+            ) ?? PRINT_BANDS[PRINT_BANDS.length - 1]).label}
+          </span>
+          . The scale runs 0 (no manipulation) to 100 (highly manipulated).
+        </p>
+
+        {/* Methodology */}
+        <h3 className="mt-6 text-[11px] font-semibold uppercase tracking-wide text-[#63666A]">
+          Methodology
+        </h3>
+        <p className="mt-2 text-xs leading-relaxed">
+          Each detector listed on page 1 independently scores the media from 0–100. The ensemble
+          combines these scores into the overall manipulation probability and verdict tier
+          ({SHARED_DETAILS.ensembleVersion}, calibrated {SHARED_DETAILS.calibrated}). In this
+          analysis, {agg.agreeingCount} of {agg.activeCount} detectors agreed with the final
+          verdict; individual detector scores ranged {lo}–{hi}.
+        </p>
+
+        {/* Citation */}
+        <h3 className="mt-6 text-[11px] font-semibold uppercase tracking-wide text-[#63666A]">
+          Cite this analysis
+        </h3>
+        <pre className="mt-2 font-mono text-[9px] leading-relaxed border border-[#BCBDC0] rounded bg-[#F7F7F7] p-3 whitespace-pre-wrap break-inside-avoid">
+{`@misc{truemedia2026,
+  title        = {TrueMedia: Open-Source Deepfake Detection},
+  author       = {{Georgetown University}},
+  year         = {2026},
+  howpublished = {\\url{https://truemedia.georgetown.edu}},
+  note         = {Analysis ${view.caseId}, ensemble ${SHARED_DETAILS.ensembleVersion}}
+}`}
+        </pre>
+        <p className="mt-1.5 text-[10px] text-[#63666A]">
+          For use in academic and journalistic work.
+        </p>
+
+        <PrintPageFooter page={2} caseId={view.caseId} />
+      </div>
+    </section>
+  );
+}
+
+// Legend rows for page 2 — tier copy from the production verdict taxonomy
+// (realData REAL_VERDICTS); numeric ranges are the tier breakpoints in
+// verdict.ts (verdictFromConfidence).
+const TIER_LEGEND: { verdict: Verdict; range: string; meaning: string }[] = [
+  { verdict: "little-evidence", range: "0 – 24", meaning: REAL_VERDICTS.low.longSummary },
+  { verdict: "uncertain", range: "25 – 49", meaning: REAL_VERDICTS.uncertain.longSummary },
+  { verdict: "some-evidence", range: "50 – 74", meaning: "Some Evidence of Manipulation" },
+  { verdict: "substantial-evidence", range: "75 – 100", meaning: REAL_VERDICTS.high.longSummary },
+];
+
+// Same bands as the on-screen verbal-confidence ladder (EnsembleGauge).
+const PRINT_BANDS = [
+  { from: 0, to: 25, label: "Unlikely" },
+  { from: 25, to: 50, label: "Possible" },
+  { from: 50, to: 75, label: "Likely" },
+  { from: 75, to: 90, label: "Very likely" },
+  { from: 90, to: 100, label: "Virtually certain" },
+];
+
+function PrintPageFooter({ page, caseId }: { page: number; caseId: string }) {
+  return (
+    <div className="mt-3 pt-2 border-t border-[#BCBDC0] flex items-baseline justify-between text-[10px] text-[#63666A]">
+      <span>
+        Verify at <span className="font-mono text-[#041E42]">truemedia.georgetown.edu</span> ·
+        © 2026 TrueMedia · Georgetown University
+      </span>
+      <span className="font-mono">
+        {caseId} · Page {page} of 2
+      </span>
+    </div>
   );
 }
 

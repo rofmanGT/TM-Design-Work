@@ -1,10 +1,20 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "TrueMedia — Deepfake Detection (Design Mockup)",
   description:
     "Design mockup of the TrueMedia.org platform — an open-source deepfake detection project of Georgetown University.",
+};
+
+// Mobile: paint the browser chrome Georgetown Blue so the fixed navy header
+// reads edge-to-edge on phones. Deliberately NOT viewport-fit=cover — the
+// fixed header doesn't thread safe-area insets, so cover would put content
+// under the notch in landscape.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#041E42",
 };
 
 // Inline script that sets the `dark` class on <html> BEFORE first paint to avoid a
